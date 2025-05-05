@@ -64,7 +64,7 @@ class AuthController extends ApiInterface
 
             $userRepository->add($user, true);
             $info_user = [
-                'login' => $request->get('email'),
+                'login' => $data['email'],
 
             ];
 
@@ -73,7 +73,7 @@ class AuthController extends ApiInterface
             // TO DO
             $sendMailService->send(
                 'tester@myonmci.ci',
-                $request->get('email'),
+                $data['email'],
                 'Informations',
                 'content_mail',
                 $context
