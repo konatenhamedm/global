@@ -1,17 +1,115 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
-        {% block stylesheets %}
-        {% endblock %}
+<html lang="en" dir="ltr">
 
-        {% block javascripts %}
-            {% block importmap %}{{ importmap('app') }}{% endblock %}
-        {% endblock %}
-    </head>
-    <body>
-        {% block body %}{% endblock %}
-    </body>
+<!-- Mirrored from themes.kopyov.com/limitless/demo/template/html/layout_1/full/index.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 29 Apr 2025 13:47:50 GMT -->
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<title>{% block title %}Bienvenue{% endblock %}</title>
+
+	<!-- Global stylesheets -->
+	<link href="{{ asset('assets/fonts/inter/inter.css') }}" rel="stylesheet" type="text/css">
+	<link href="{{ asset('assets/icons/phosphor/styles.min.css') }}" rel="stylesheet" type="text/css">
+	<link href="{{ asset('assets/assets/css/ltr/all.min.css') }}" id="stylesheet" rel="stylesheet" type="text/css">
+	<!-- /global stylesheets -->
+
+	<!-- Core JS files -->
+	<script src="{{ asset('assets/demo/demo_configurator.js') }}"></script>
+	<script src="{{ asset('assets/js/bootstrap/bootstrap.bundle.min.js') }}"></script>
+	<!-- /core JS files -->
+
+	<!-- Theme JS files -->
+	<script src="{{ asset('assets/js/vendor/visualization/d3/d3.min.js') }}"></script>
+	<script src="{{ asset('assets/js/vendor/visualization/d3/d3_tooltip.js') }}"></script>
+
+	<script src="{{ asset('assets/assets/js/app.js') }}"></script>
+	<script src="{{ asset('assets/demo/pages/dashboard.js') }}"></script>
+	<script src="{{ asset('assets/demo/charts/pages/dashboard/streamgraph.js') }}"></script>
+	<script src="{{ asset('assets/demo/charts/pages/dashboard/sparklines.js') }}"></script>
+	<script src="{{ asset('assets/demo/charts/pages/dashboard/lines.js') }}"></script>	
+	<script src="{{ asset('assets/demo/charts/pages/dashboard/areas.js') }}"></script>
+	<script src="{{ asset('assets/demo/charts/pages/dashboard/donuts.js') }}"></script>
+	<script src="{{ asset('assets/demo/charts/pages/dashboard/bars.js') }}"></script>
+	<script src="{{ asset('assets/demo/charts/pages/dashboard/progress.js') }}"></script>
+	<script src="{{ asset('assets/demo/charts/pages/dashboard/heatmaps.js') }}"></script>
+	<script src="{{ asset('assets/demo/charts/pages/dashboard/pies.js') }}"></script>
+	<script src="{{ asset('assets/demo/charts/pages/dashboard/bullets.js') }}"></script>
+	<!-- /theme JS files -->
+
+    	<script src="{{ asset('assets/js/jquery/jquery.min.js') }}"></script>
+	<script src="{{  asset('assets/js/vendor/forms/wizards/steps.min.js') }}"></script>
+	<script src="{{  asset('assets/js/vendor/forms/validation/validate.min.js') }}"></script>
+	<script src="{{ asset('/assets/demo/pages/form_wizard.js') }}"></script>
+
+
+        <link href="{{ asset('assets/css/admin.css') }}" rel="stylesheet" type="text/css" />
+
+
+</head>
+
+<body>
+
+	<!-- Main navbar -->
+	{# // TO DO NAVBAR #}
+				{{ include('_includes/header.html.twig') }}
+
+	<!-- /main navbar -->
+
+
+	<!-- Page content -->
+	<div class="page-content">
+
+		<!-- Main sidebar -->
+		 {# // TO DO SIDE #}
+				{{ include('_includes/aside.html.twig') }}
+
+		<!-- /main sidebar -->
+
+
+		<!-- Main content -->
+		<div class="content-wrapper">
+
+			<!-- Inner content -->
+			<div class="content-inner">
+
+				<!-- Page header -->
+				{#  // TO DO SECONDE NAvbar #}
+				{% block breadcrumb %}{% endblock %}
+
+				<!-- /page header -->
+
+
+				<!-- Content area -->
+				<div class="content">
+								{% block body %}
+                                
+                                {% endblock %}
+
+					
+				</div>
+				<!-- /content area -->
+
+
+				<!-- Footer -->
+				{# //TO DO: Footer content #}
+				{{ include('_includes/footer.html.twig') }}
+
+				<!-- /footer -->
+
+			</div>
+			<!-- /inner content -->
+
+		</div>
+		<!-- /main content -->
+
+	</div>
+	<!-- /page content -->
+          {% block java %}{% endblock %}
+
+
+
+</body>
+
+<!-- Mirrored from themes.kopyov.com/limitless/demo/template/html/layout_1/full/index.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 29 Apr 2025 13:49:34 GMT -->
 </html>
