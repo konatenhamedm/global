@@ -56,6 +56,9 @@ class SansImpression
     #[ORM\Column(length: 255)]
     private ?string $etape = null;
 
+    #[ORM\ManyToOne(inversedBy: 'sansImpressions')]
+    private ?Commande $commande = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -225,6 +228,18 @@ class SansImpression
     public function setEtape(string $etape): static
     {
         $this->etape = $etape;
+
+        return $this;
+    }
+
+    public function getCommande(): ?Commande
+    {
+        return $this->commande;
+    }
+
+    public function setCommande(?Commande $commande): static
+    {
+        $this->commande = $commande;
 
         return $this;
     }

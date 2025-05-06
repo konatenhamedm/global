@@ -52,8 +52,6 @@ class AvecImpression
     #[ORM\Column(nullable: true)]
     private ?\DateTime $dateProgrammationPose = null;
 
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $commentaireEtape5 = null;
 
     #[ORM\Column(nullable: true)]
     private ?\DateTime $dateDebutPose = null;
@@ -110,6 +108,9 @@ class AvecImpression
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $commentaireProgrammationPose = null;
+
+    #[ORM\ManyToOne(inversedBy: 'avecImpressions')]
+    private ?Commande $commande = null;
 
   
     
@@ -389,6 +390,18 @@ class AvecImpression
     public function setCommentaireProgrammationPose(?string $commentaireProgrammationPose): static
     {
         $this->commentaireProgrammationPose = $commentaireProgrammationPose;
+
+        return $this;
+    }
+
+    public function getCommande(): ?Commande
+    {
+        return $this->commande;
+    }
+
+    public function setCommande(?Commande $commande): static
+    {
+        $this->commande = $commande;
 
         return $this;
     }

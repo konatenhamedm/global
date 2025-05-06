@@ -1,2 +1,109 @@
 framework:
-    workflows: null
+    workflows:
+        gestion_contrat:
+            type: 'state_machine'
+            audit_trail:
+                enabled: true
+            marking_store:
+                type: 'method'
+                property: 'etat'
+            supports:
+                - App\Entity\Commande
+            initial_marking: devis_attente
+            places:
+                - devis_attente                  
+                - proforma_attente_validation    
+                - contrat_attente_creation       
+                - contrat_attente_validation     
+                - contrat_en_cours               
+                - contrat_cloture                
+            transitions:
+                traiter_devis:
+                    from: devis_attente
+                    to: proforma_attente_validation
+                valider_proforma:
+                    from: proforma_attente_validation
+                    to: contrat_attente_creation
+                creer_contrat:
+                    from: contrat_attente_creation
+                    to: contrat_attente_validation
+                valider_contrat:
+                    from: contrat_attente_validation
+                    to: contrat_en_cours
+                cloturer_contrat:
+                    from: contrat_en_cours
+                    to: contrat_cloture
+
+
+        validation_avec_impression:
+            type: 'state_machine'
+            audit_trail:
+                enabled: true
+            marking_store:
+                type: 'method'
+                property: 'etape'
+            supports:
+                - App\Entity\AvecImpression
+            initial_marking: etape_1
+            places:
+                - etape_1
+                - etape_2
+                - etape_3
+                - etape_4
+                - etape_5
+                - etape_6
+                - etape_7
+                - etape_8
+            transitions:
+                vers_etape_2:
+                    from: etape_1
+                    to: etape_2
+                vers_etape_3:
+                    from: etape_2
+                    to: etape_3
+                vers_etape_4:
+                    from: etape_3
+                    to: etape_4
+                vers_etape_5:
+                    from: etape_4
+                    to: etape_5
+                vers_etape_6:
+                    from: etape_5
+                    to: etape_6
+                vers_etape_7:
+                    from: etape_6
+                    to: etape_7
+                vers_etape_8:
+                    from: etape_7
+                    to: etape_8
+
+
+        validation_sans_impression:
+            type: 'state_machine'
+            audit_trail:
+                enabled: true
+            marking_store:
+                type: 'method'
+                property: 'etape'
+            supports:
+                - App\Entity\SansImpression
+            initial_marking: etape_1
+            places:
+                - etape_1
+                - etape_2
+                - etape_3
+                - etape_4
+                - etape_5
+            transitions:
+                vers_etape_2:
+                    from: etape_1
+                    to: etape_2
+                vers_etape_3:
+                    from: etape_2
+                    to: etape_3
+                vers_etape_4:
+                    from: etape_3
+                    to: etape_4
+                vers_etape_5:
+                    from: etape_4
+                    to: etape_5

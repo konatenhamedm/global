@@ -43,7 +43,7 @@ class Commande
     #[Group(["group1","group_commande"])]
     private ?\DateTime $dateFin = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     #[Group(["group1","group_commande"])]
     private ?string $montant = null;
 
@@ -80,11 +80,27 @@ class Commande
     #[Group(["group1","group_commande"])]
     private ?bool $impressionVisuelle = null;
 
+    /**
+     * @var Collection<int, AvecImpression>
+     */
+    #[ORM\OneToMany(targetEntity: AvecImpression::class, mappedBy: 'commande')]
+    private Collection $avecImpressions;
+
+    /**
+     * @var Collection<int, SansImpression>
+     */
+    #[ORM\OneToMany(targetEntity: SansImpression::class, mappedBy: 'commande')]
+    private Collection $sansImpressions;
+
     public function __construct()
     {
         $this->lignes = new ArrayCollection();
         $this->dateCommande = new \DateTime();
         $this->validations = new ArrayCollection();
+        $this->avecImpressions = new ArrayCollection();
+        $this->sansImpressions = new ArrayCollection();
+        $this->etat = "devis_attente";
+        $this->dateCommande = new \DateTime();
     }
 
     public function getId(): ?int
@@ -292,6 +308,66 @@ class Commande
     public function setImpressionVisuelle(bool $impressionVisuelle): static
     {
         $this->impressionVisuelle = $impressionVisuelle;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, AvecImpression>
+     */
+    public function getAvecImpressions(): Collection
+    {
+        return $this->avecImpressions;
+    }
+
+    public function addAvecImpression(AvecImpression $avecImpression): static
+    {
+        if (!$this->avecImpressions->contains($avecImpression)) {
+            $this->avecImpressions->add($avecImpression);
+            $avecImpression->setCommande($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAvecImpression(AvecImpression $avecImpression): static
+    {
+        if ($this->avecImpressions->removeElement($avecImpression)) {
+            // set the owning side to null (unless already changed)
+            if ($avecImpression->getCommande() === $this) {
+                $avecImpression->setCommande(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, SansImpression>
+     */
+    public function getSansImpressions(): Collection
+    {
+        return $this->sansImpressions;
+    }
+
+    public function addSansImpression(SansImpression $sansImpression): static
+    {
+        if (!$this->sansImpressions->contains($sansImpression)) {
+            $this->sansImpressions->add($sansImpression);
+            $sansImpression->setCommande($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSansImpression(SansImpression $sansImpression): static
+    {
+        if ($this->sansImpressions->removeElement($sansImpression)) {
+            // set the owning side to null (unless already changed)
+            if ($sansImpression->getCommande() === $this) {
+                $sansImpression->setCommande(null);
+            }
+        }
 
         return $this;
     }

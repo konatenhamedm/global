@@ -19,7 +19,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class AuthController extends ApiInterface
 {
 
-    #[Route('/compte/user/creation',  methods: ['POST'])]
+    #[Route('/api/compte/user/creation',  methods: ['POST'])]
     /**
      * Permet de créer un compte user client.
      */
