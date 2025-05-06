@@ -6,6 +6,7 @@ use App\Controller\Apis\Config\ApiInterface;
 use App\DTO\CommandeDTO;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Entity\Commande;
+use App\Entity\Face;
 use App\Entity\Ligne;
 use App\Repository\ClientRepository;
 use App\Repository\CommandeRepository;
@@ -206,7 +207,7 @@ class ApiCommandeController extends ApiInterface
             $commandeRepository->add($commande, true); 
             $ligneRepository->add($ligneEntity, true);
 
-            $face->setEtat('Reserve');
+            $face->setEtat(Face::ETAT['Reserve']);
             $face->dateDebut(new \DateTime($ligneData['dateDebut']));
             $face->setDateFin(new \DateTime($ligneData['dateFin']));
             $faceRepository->add($face, true);

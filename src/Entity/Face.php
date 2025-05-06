@@ -14,7 +14,7 @@ class Face
 {
     use TraitEntity; 
 
-    const etat = [
+    const ETAT = [
         'Libre' => "Libre",
         'Reserve' => "Reserve",
         'Encours' => "Encours",
