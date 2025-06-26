@@ -12,7 +12,15 @@ use App\Repository\ClientRepository;
 use App\Repository\CiviliteRepository;
 use App\Repository\FonctionRepository;
 use App\Repository\GenreRepository;
+use App\Repository\IlluminationRepository;
+use App\Repository\OrientationRepository;
+use App\Repository\SousTypeRepository;
+use App\Repository\SpecificationRepository;
+use App\Repository\SubstratRepository;
+use App\Repository\SuperficieRepository;
+use App\Repository\TailleRepository;
 use App\Repository\TypeClientRepository;
+use App\Repository\TypeRepository;
 use App\Repository\UserRepository;
 use DateTime;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,6 +37,7 @@ class ApiClientController extends ApiInterface
 
 
 
+   
     #[Route('/', methods: ['GET'])]
     /**
      * Retourne la liste des clients.
@@ -49,9 +58,6 @@ class ApiClientController extends ApiInterface
         try {
 
             $clients = $clientRepository->findAll();
-
-          
-
             $response =  $this->responseData($clients, 'group1', ['Content-Type' => 'application/json']);
         } catch (\Exception $exception) {
             $this->setMessage("");
@@ -153,11 +159,13 @@ class ApiClientController extends ApiInterface
 
         $type = $typeClientRepository->find($data['type'])->getCod();
 
-        if($type == "PERSO"){
+        if($type == "individual"){
             $client->setTypeClient($typeClientRepository->find($data['type']));
             $client->setNom($data['nom']);
             $client->setPrenoms($data['prenoms']);
-            $client->setContact($data['prenoms']);
+            $client->setContact($data['contact']);
+            $client->setEmail($data['email']);
+
 
         }else{
             $client->setTypeClient($typeClientRepository->find($data['type']));
@@ -236,10 +244,11 @@ class ApiClientController extends ApiInterface
             if ($client != null) {
 
               $typeClient =  $client->getTypeClient()->getCode();
-              if($typeClient == "PERS"){            
+              if($typeClient == "individual"){            
                 $client->setNom($data->nom);
                 $client->setPrenoms($data->prenoms);
                 $client->setContact($data->contact);
+                $client->setEmail($data->email);
               }else{
                 $client->setDenomination($data->denomination);
                 $client->setCompteContribuable($data->compteContribuable);

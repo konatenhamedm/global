@@ -16,6 +16,24 @@ class AvecImpressionRepository extends ServiceEntityRepository
         parent::__construct($registry, AvecImpression::class);
     }
 
+    public function add(AvecImpression $entity, bool $flush = false): void
+    {
+        $this->getEntityManager()->persist($entity);
+
+        if ($flush) {
+            $this->getEntityManager()->flush();
+        }
+    }
+
+    public function remove(AvecImpression $entity, bool $flush = false): void
+    {
+        $this->getEntityManager()->remove($entity);
+
+        if ($flush) {
+            $this->getEntityManager()->flush();
+        }
+    }
+
     //    /**
     //     * @return AvecImpression[] Returns an array of AvecImpression objects
     //     */

@@ -4,6 +4,7 @@ namespace  App\Controller\Apis;
 
 use App\Controller\Apis\Config\ApiInterface;
 use App\DTO\PanneauDTO;
+use App\Entity\Face;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Entity\Panneau;
 use App\Entity\SousType;
@@ -132,6 +133,21 @@ class ApiPanneauController extends ApiInterface
                     new OA\Property(property: "code", type: "string"),
                     new OA\Property(property: "userUpdate", type: "string"),
 
+                    new OA\Property(
+                        property: "lignes",
+                        type: "array",
+                        items: new OA\Items(
+                            type: "object",
+                            properties: [
+                                new OA\Property(property: "imagePrincipale", type: "string", format: "binary"), //photo
+                                new OA\Property(property: "imageSecondaire1", type: "string", format: "binary"), //photo
+                                new OA\Property(property: "imageSecondaire2", type: "string", format: "binary"), //photo
+                                new OA\Property(property: "imageSecondaire3", type: "string", format: "binary"), //photo
+                                new OA\Property(property: "dateDebut", type: "string"),
+                                new OA\Property(property: "dateFin", type: "string"),
+                            ]
+                        ),
+                    ),
                 ],
                 type: "object"
             )
@@ -155,23 +171,82 @@ class ApiPanneauController extends ApiInterface
      ): Response
     {
 
+        $names = 'document_' . '01';
+        $filePrefix  = str_slug($names);
+        $filePath = $this->getUploadDir(self::UPLOAD_PATH, true);
+
+
         $data = json_decode($request->getContent(), true);
         $panneau = new Panneau();
-        $panneau->setGpsLat($data['gpsLat']);
-        $panneau->setGpsLong($data['gpsLong']);
-        $panneau->setType($typeRepository->find($data['type']));
-        $panneau->setIllumination($illuminationRepository->find($data['illumination']));
-        $panneau->setSousType($sousTypeRepository->find($data['soustype']));
-        $panneau->setSubstrat($substratRepository->find($data['substrat']));
-        $panneau->setLocalite($localiteRepository->find($data['localite']));
-        $panneau->setTaille($tailleRepository->find($data['taille']));
-        $panneau->setSuperficie($superficieRepository->find($data['superficie']));
-        $panneau->setOrientation($orientationRepository->find($data['orientation']));
-        $panneau->setCode($data['code']);
-        $panneau->setCreatedBy($this->userRepository->find($data['userUpdate']));
-        $panneau->setUpdatedBy($this->userRepository->find($data['userUpdate']));
+        $panneau->setGpsLat($request->get('gpsLat'));
+        $panneau->setGpsLong($request->get('gpsLong'));
+        $panneau->setType($typeRepository->find($request->get('type')));
+        $panneau->setIllumination($illuminationRepository->find($request->get('illumination')));
+        $panneau->setSousType($sousTypeRepository->find($request->get('soustype')));
+        $panneau->setSubstrat($substratRepository->find($request->get('substrat')));
+        $panneau->setLocalite($localiteRepository->find($request->get('localite')));
+        $panneau->setTaille($tailleRepository->find($request->get('taille')));
+        $panneau->setSuperficie($superficieRepository->find($request->get('superficie')));
+        $panneau->setOrientation($orientationRepository->find($request->get('orientation')));
+        $panneau->setCode($request->get('code'));
+        $panneau->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
+        $panneau->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
         $panneau->setCreatedAtValue(new DateTime());
         $panneau->setUpdatedAt(new DateTime());
+
+
+        $faces = $$request->get('faces');
+
+        foreach ($faces as $face) {
+            //$face = $faceRepository->find($ligneData['face']);
+
+            $face = new Face();
+            $face->setNumFace($face['numFace']);
+            $face->setCode($face['code']);
+            $face->setPrix($face['prix']);
+            $face->setPrix($face['prix']);
+
+
+            $image1 = $request->files->get('imagePrincipale');
+            $image2 = $request->files->get('imageSecondaire1');
+            $image3 = $request->files->get('imageSecondaire2');
+            $image4 = $request->files->get('imageSecondaire3');
+
+
+            if ($image1) {
+                $fichier = $this->utils->sauvegardeFichier($filePath, $filePrefix, $image1, self::UPLOAD_PATH);
+                if ($fichier) {
+                    $face->setImagePrincipale($fichier);
+                }
+            }
+            if ($image2) {
+                $fichier = $this->utils->sauvegardeFichier($filePath, $filePrefix, $image2, self::UPLOAD_PATH);
+                if ($fichier) {
+                    $face->setImageSecondaire1($fichier);
+                }
+            }
+            if ($image3) {
+                $fichier = $this->utils->sauvegardeFichier($filePath, $filePrefix, $image3, self::UPLOAD_PATH);
+                if ($fichier) {
+                    $face->setImageSecondaire2($fichier);
+                }
+            }
+            if ($image4) {
+                $fichier = $this->utils->sauvegardeFichier($filePath, $filePrefix, $image4, self::UPLOAD_PATH);
+                if ($fichier) {
+                    $face->setImageSecondaire3($fichier);
+                }
+            }
+
+            $face->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
+            $face->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
+            $face->setCreatedAtValue(new DateTime());
+            $face->setUpdatedAt(new DateTime());
+            
+            $panneau->addFace($face);
+        }
+
+
 
         $errorResponse = $this->errorResponse($panneau);
         if ($errorResponse !== null) {

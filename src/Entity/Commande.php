@@ -78,7 +78,7 @@ class Commande
 
     #[ORM\Column]
     #[Group(["group1","group_commande"])]
-    private ?bool $impressionVisuelle = null;
+    private ?string $impressionVisuelle = null;
 
     /**
      * @var Collection<int, AvecImpression>
@@ -300,12 +300,12 @@ class Commande
         return $this;
     }
 
-    public function isImpressionVisuelle(): ?bool
+    public function getImpressionVisuelle(): ?string
     {
         return $this->impressionVisuelle;
     }
 
-    public function setImpressionVisuelle(bool $impressionVisuelle): static
+    public function setImpressionVisuelle(?string $impressionVisuelle): static
     {
         $this->impressionVisuelle = $impressionVisuelle;
 

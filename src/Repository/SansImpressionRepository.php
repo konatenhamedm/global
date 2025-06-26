@@ -15,7 +15,23 @@ class SansImpressionRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, SansImpression::class);
     }
+    public function add(SansImpression $entity, bool $flush = false): void
+    {
+        $this->getEntityManager()->persist($entity);
 
+        if ($flush) {
+            $this->getEntityManager()->flush();
+        }
+    }
+
+    public function remove(SansImpression $entity, bool $flush = false): void
+    {
+        $this->getEntityManager()->remove($entity);
+
+        if ($flush) {
+            $this->getEntityManager()->flush();
+        }
+    }
     //    /**
     //     * @return SansImpression[] Returns an array of SansImpression objects
     //     */

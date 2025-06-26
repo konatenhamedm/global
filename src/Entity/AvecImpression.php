@@ -11,6 +11,9 @@ use Doctrine\DBAL\Types\Types;
 #[ORM\Entity(repositoryClass: AvecImpressionRepository::class)]
 class AvecImpression
 {
+
+    use TraitEntity; 
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -111,6 +114,20 @@ class AvecImpression
 
     #[ORM\ManyToOne(inversedBy: 'avecImpressions')]
     private ?Commande $commande = null;
+
+
+    #[ORM\ManyToOne(cascade: ["persist"], fetch: "EAGER")]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Group(["fichier", "group1"])]
+    private ?Fichier $imageImpressionVisuelle = null;
+
+   
+
+    #[ORM\ManyToOne(cascade: ["persist"], fetch: "EAGER")]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Group(["fichier", "group1"])]
+    private ?Fichier $rapportPoseDocument = null;
+
 
   
     
@@ -402,6 +419,30 @@ class AvecImpression
     public function setCommande(?Commande $commande): static
     {
         $this->commande = $commande;
+
+        return $this;
+    }
+
+    public function getImageImpressionVisuelle(): ?Fichier
+    {
+        return $this->imageImpressionVisuelle;
+    }
+
+    public function setImageImpressionVisuelle(?Fichier $imageImpressionVisuelle): static
+    {
+        $this->imageImpressionVisuelle = $imageImpressionVisuelle;
+
+        return $this;
+    }
+
+    public function getRapportPoseDocument(): ?string
+    {
+        return $this->rapportPoseDocument;
+    }
+
+    public function setRapportPoseDocument(?string $rapportPoseDocument): static
+    {
+        $this->rapportPoseDocument = $rapportPoseDocument;
 
         return $this;
     }

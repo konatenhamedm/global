@@ -44,7 +44,7 @@ class Face
     #[ORM\ManyToOne(cascade: ["persist"], fetch: "EAGER")]
     #[ORM\JoinColumn(nullable: true)]
     #[Group(["fichier", "group1"])]
-    private ?Fichier $image = null;
+    private ?Fichier $imagePrincipale = null;
     
     #[ORM\ManyToOne(inversedBy: 'faces')]
     #[Group(["group_commande"])]
@@ -67,6 +67,31 @@ class Face
     #[ORM\Column(nullable: true)]
     #[Group(["group1"])]
     private ?\DateTime $dateFin = null;
+
+
+
+
+    #[ORM\ManyToOne(cascade: ["persist"], fetch: "EAGER")]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Group(["fichier", "group1"])]
+    private ?Fichier $imageSecondaire1 = null;
+
+
+    #[ORM\ManyToOne(cascade: ["persist"], fetch: "EAGER")]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Group(["fichier", "group1"])]
+    private ?Fichier $imageSecondaire2 = null;
+
+
+    #[ORM\ManyToOne(cascade: ["persist"], fetch: "EAGER")]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Group(["fichier", "group1"])]
+    private ?Fichier $imageSecondaire3 = null;
+
+
+
+
+
 
     public function __construct()
     {
@@ -115,14 +140,14 @@ class Face
         return $this;
     }
 
-    public function getImage(): ?Fichier
+    public function getImagePrincipale(): ?Fichier
     {
-        return $this->image;
+        return $this->imagePrincipale;
     }
 
-    public function setImage(?Fichier $image): static
+    public function setImagePrincipale(?Fichier $imagePrincipale): static
     {
-        $this->image = $image;
+        $this->imagePrincipale = $imagePrincipale;
 
         return $this;
     }
@@ -201,6 +226,42 @@ class Face
     public function setDateFin(?\DateTime $dateFin): static
     {
         $this->dateFin = $dateFin;
+
+        return $this;
+    }
+
+    public function getImageSecondaire1(): ?Fichier
+    {
+        return $this->imageSecondaire1;
+    }
+
+    public function setImageSecondaire1(?Fichier $imageSecondaire1): static
+    {
+        $this->imageSecondaire1 = $imageSecondaire1;
+
+        return $this;
+    }
+
+    public function getImageSecondaire2(): ?Fichier
+    {
+        return $this->imageSecondaire2;
+    }
+
+    public function setImageSecondaire2(?Fichier $imageSecondaire2): static
+    {
+        $this->imageSecondaire2 = $imageSecondaire2;
+
+        return $this;
+    }
+
+    public function getImageSecondaire3(): ?Fichier
+    {
+        return $this->imageSecondaire3;
+    }
+
+    public function setImageSecondaire3(?Fichier $imageSecondaire3): static
+    {
+        $this->imageSecondaire3 = $imageSecondaire3;
 
         return $this;
     }

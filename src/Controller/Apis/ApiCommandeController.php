@@ -4,14 +4,18 @@ namespace  App\Controller\Apis;
 
 use App\Controller\Apis\Config\ApiInterface;
 use App\DTO\CommandeDTO;
+use App\Entity\AvecImpression;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Entity\Commande;
 use App\Entity\Face;
 use App\Entity\Ligne;
+use App\Entity\SansImpression;
+use App\Repository\AvecImpressionRepository;
 use App\Repository\ClientRepository;
 use App\Repository\CommandeRepository;
 use App\Repository\FaceRepository;
 use App\Repository\LigneRepository;
+use App\Repository\SansImpressionRepository;
 use App\Repository\UserRepository;
 use DateTime;
 use Symfony\Component\HttpFoundation\Response;
@@ -173,7 +177,14 @@ class ApiCommandeController extends ApiInterface
         ]
     )]
     #[OA\Tag(name: 'commande')]
-    public function create(Request $request, CommandeRepository $commandeRepository, ClientRepository $clientRepository, FaceRepository $faceRepository, LigneRepository $ligneRepository): Response
+    public function create(Request $request, CommandeRepository $commandeRepository,
+     ClientRepository $clientRepository, 
+     FaceRepository $faceRepository, 
+     LigneRepository $ligneRepository,
+     AvecImpressionRepository $avecImpressionRepository,
+     SansImpressionRepository $sansImpressionRepository,
+     
+     ): Response
     {
 
         $data = json_decode($request->getContent(), true);
@@ -183,6 +194,8 @@ class ApiCommandeController extends ApiInterface
         $commande->setClient($clientRepository->find($data['client']));
         $commande->setMontant($data['montant']);
         $commande->setCode($this->code());
+        $commande->setDateDebut(new \DateTime($data['dateDebut']));
+        $commande->setDateFin(new \DateTime($data['dateFin']));
         $commande->setCreatedBy($this->userRepository->find($data['userUpdate']));
         $commande->setUpdatedBy($this->userRepository->find($data['userUpdate']));
         $commande->setCreatedAtValue(new DateTime());
@@ -193,6 +206,9 @@ class ApiCommandeController extends ApiInterface
             return $errorResponse;
         } 
 
+
+
+
         $lignes = $data['lignes'];
         foreach ($lignes as $ligneData) {
             $face = $faceRepository->find($ligneData['face']);
@@ -200,17 +216,42 @@ class ApiCommandeController extends ApiInterface
             $ligneEntity = new Ligne();
             $ligneEntity->setFace($face);
             $ligneEntity->setPrix($face->getPrix());
-            $ligneEntity->setDateDebut(new \DateTime($ligneData['dateDebut']));
-            $ligneEntity->setDateFin(new \DateTime($ligneData['dateFin']));
+            $ligneEntity->setDateDebut(new \DateTime($data['dateDebut']));
+            $ligneEntity->setDateFin(new \DateTime($data['dateFin']));
             $ligneEntity->setCommande($commande);
 
             $commandeRepository->add($commande, true); 
             $ligneRepository->add($ligneEntity, true);
 
             $face->setEtat(Face::ETAT['Reserve']);
-            $face->dateDebut(new \DateTime($ligneData['dateDebut']));
-            $face->setDateFin(new \DateTime($ligneData['dateFin']));
+            $face->dateDebut(new \DateTime($data['dateDebut']));
+            $face->setDateFin(new \DateTime($data['dateFin']));
             $faceRepository->add($face, true);
+        }
+
+        if($data['impressionVisuelle'] == "avec"){
+
+            $avecImpression = new AvecImpression();
+            $avecImpression->setCommande($commande);
+            $avecImpression->setEtape('etape_1');
+            $avecImpression->setCreatedBy($this->userRepository->find($data['userUpdate']));
+            $avecImpression->setUpdatedBy($this->userRepository->find($data['userUpdate']));
+            $avecImpression->setCreatedAtValue(new DateTime());
+            $avecImpression->setUpdatedAt(new DateTime());
+            $avecImpressionRepository->add($avecImpression, true);
+            
+            
+        }else{
+           $sansImpression = new SansImpression();
+            $sansImpression->setCommande($commande);
+            $sansImpression->setEtape('etape_1');
+            $sansImpression->setCreatedBy($this->userRepository->find($data['userUpdate']));
+            $sansImpression->setUpdatedBy($this->userRepository->find($data['userUpdate']));
+            $sansImpression->setCreatedAtValue(new DateTime());
+            $sansImpression->setUpdatedAt(new DateTime());
+
+            $sansImpressionRepository->add($sansImpression, true);
+
         }
 
         return $this->responseData($commande, 'group1', ['Content-Type' => 'application/json']);

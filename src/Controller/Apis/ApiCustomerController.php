@@ -10,7 +10,16 @@ use App\Entity\Commande;
 use App\Entity\Panneau;
 use App\Repository\CiviliteRepository;
 use App\Repository\CommandeRepository;
+use App\Repository\IlluminationRepository;
+use App\Repository\OrientationRepository;
 use App\Repository\PanneauRepository;
+use App\Repository\SousTypeRepository;
+use App\Repository\SpecificationRepository;
+use App\Repository\SubstratRepository;
+use App\Repository\SuperficieRepository;
+use App\Repository\TailleRepository;
+use App\Repository\TypeClientRepository;
+use App\Repository\TypeRepository;
 use App\Repository\UserRepository;
 use DateTime;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,6 +33,123 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 #[Route('/api/customer')]
 class ApiCustomerController extends ApiInterface
 {
+
+
+    #[Route('/parametres', methods: ['GET'])]
+    /**
+     * Retourne la liste des clients.
+     * 
+     */
+    #[OA\Response(
+        response: 200,
+        description: 'Returns the rewards of a user',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(ref: new Model(type: Panneau::class, groups: ['full']))
+        )
+    )]
+    #[OA\Tag(name: 'customer')]
+    // #[Security(name: 'Bearer')]
+    public function indexParametre(
+        TypeClientRepository $typeClientRepository,
+        TailleRepository $tailleRepository,
+        IlluminationRepository $illuminationRepository,
+        SousTypeRepository $sousTypeRepository,
+        SpecificationRepository $specificationRepository,
+        OrientationRepository $orientationRepository,
+        SubstratRepository $substratRepository,
+        SuperficieRepository $superficieRepository,
+        TypeRepository $typeRepository
+
+    ): Response {
+        try {
+            $tailles = [];
+            $illuminations = [];
+            $substrats = [];
+            $specifications = [];
+            $panneauTypes = [];
+            $panneauSousTypes = [];
+            $superficies = [];
+            $oriantation = [];
+
+            foreach ($tailleRepository->findAll() as $key => $taille) {
+                $tailles[] = [
+                    'id' => $taille->getId(),
+                    'libelle' => $taille->getDimenssions(),
+                ];
+            }
+
+            foreach ($illuminationRepository->findAll() as $key => $illumination) {
+                $illuminations[] = [
+                    'id' => $illumination->getId(),
+                    'libelle' => $illumination->getLibelle()
+                ];
+            }
+
+            foreach ($substratRepository->findAll() as $key => $substrat) {
+                $substrats[] = [
+                    'id' => $substrat->getId(),
+                    'libelle' => $substrat->getLibelle(),
+                    'code' => $substrat->getCode(),
+                ];
+            }
+            foreach ($specificationRepository->findAll() as $key => $specification) {
+                $specifications[] = [
+                    'id' => $specification->getId(),
+                    'libelle' => $specification->getLibelle(),
+                    'code' => $specification->getCode(),
+                ];
+            }
+            foreach ($typeRepository->findAll() as $key => $type) {
+                $panneauTypes[] = [
+                    'id' => $type->getId(),
+                    'libelle' => $type->getLibelle(),
+                ];
+            }
+
+            foreach ($sousTypeRepository->findAll() as $key => $sousType) {
+                $panneauSousTypes[] = [
+                    'id' => $sousType->getId(),
+                    'libelle' => $sousType->getLibelle(),
+                ];
+            }
+
+            foreach ($superficieRepository->findAll() as  $superficie) {
+                $superficies[] = [
+                    'id' =>  $superficie->getId(),
+                    'libelle' =>  $superficie->getLibelle(),
+
+                ];
+            }
+
+            foreach ($orientationRepository->findAll() as  $oriantation) {
+                $oriantation[] = [
+                    'id' =>  $oriantation->getId(),
+                    'libelle' =>  $oriantation->getLibelle()
+                ];
+            }
+
+
+            $data = [
+                'tailles' => $tailles,
+                'illuminations' => $illuminations,
+                'substrats' => $substrats,
+                'specifications' => $specifications,
+                'panneauTypes' => $panneauTypes,
+                'panneauSousTypes' => $panneauSousTypes,
+                'superficies' => $superficies,
+                'oriantation' => $oriantation,
+            ];
+
+            $response = $this->responseData($data, 'group_pro', ['Content-Type' => 'application/json']);
+        } catch (\Exception $exception) {
+            $this->setMessage("");
+            $response = $this->response('[]');
+        }
+
+        // On envoie la réponse
+        return $response;
+    }
 
     #[Route('/liste/panneaux', methods: ['GET'])]
     /**
@@ -66,7 +192,7 @@ class ApiCustomerController extends ApiInterface
         content: new OA\JsonContent(
             type: 'array',
             items: new OA\Items(ref: new Model(type: Commande::class, groups: ['full']))
-            
+
         )
     )]
     #[OA\Parameter(
@@ -89,6 +215,4 @@ class ApiCustomerController extends ApiInterface
         // On envoie la réponse
         return $response;
     }
-   
-
 }

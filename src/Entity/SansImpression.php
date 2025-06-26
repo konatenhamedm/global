@@ -9,10 +9,15 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: SansImpressionRepository::class)]
 class SansImpression
 {
+
+    use TraitEntity; 
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+
+    // ETAPE ENVOI VISUEL BACHE
 
     #[ORM\Column(nullable: true)]
     private ?\DateTime $dateEnvoiBache = null;
@@ -23,11 +28,15 @@ class SansImpression
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $commentaireEnvoiBache = null;
 
+    // ETAPE PROGRAMMATION POSE
+
     #[ORM\Column(nullable: true)]
     private ?\DateTime $dateProgrammationPose = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $commentaireProgrammationpose = null;
+
+    // ETAPE RAPPORT DEPOSE
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $rapportPoseImage = null;
@@ -38,6 +47,8 @@ class SansImpression
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $commentRapportPose = null;
 
+    // ETAPE RAPPORT DEPOSE
+
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $rapportDepose = null;
 
@@ -46,6 +57,8 @@ class SansImpression
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $commentaireRapportDepose = null;
+
+    // ETAPE FINALISATION   bbb
 
     #[ORM\Column(nullable: true)]
     private ?\DateTime $dateFinalisation = null;
