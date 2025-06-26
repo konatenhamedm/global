@@ -30,6 +30,7 @@ class Admin extends Personne
     private ?Civilite $civilite = null;
 
     #[ORM\ManyToOne(inversedBy: 'admins')]
+    #[ORM\JoinColumn(name: "fonction_id", referencedColumnName: "id", nullable: true)]
     #[Group(["group1"])]
     private ?Fonction $fonction = null;
 
