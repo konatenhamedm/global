@@ -3,36 +3,28 @@
 namespace App\Entity;
 
 use App\Repository\FonctionRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups as Group;
+use Doctrine\ORM\Mapping\Table;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: FonctionRepository::class)]
+#[Table(name: 'param_fonction')]
+#[UniqueEntity('code', message: 'Ce code est déjà utilisé')]
 class Fonction
 {
-    use TraitEntity; 
-
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Group(["group1"])]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
-    #[Group(["group1"])]
+    #[ORM\Column(length: 100)]
+    #[Assert\NotBlank(message: 'Veuillez renseigner un libellé')]
     private ?string $libelle = null;
 
-    /**
-     * @var Collection<int, Admin>
-     */
-    #[ORM\OneToMany(targetEntity: Admin::class, mappedBy: 'fonction')]
-    private Collection $admins;
-
-    public function __construct()
-    {
-        $this->admins = new ArrayCollection();
-    }
+    #[ORM\Column(length: 5, unique: true)]
+    #[Assert\NotBlank(message: 'Veuillez renseigner un code')]
+    private ?string $code = null;
 
     public function getId(): ?int
     {
@@ -51,32 +43,14 @@ class Fonction
         return $this;
     }
 
-    /**
-     * @return Collection<int, Admin>
-     */
-    public function getAdmins(): Collection
+    public function getCode(): ?string
     {
-        return $this->admins;
+        return $this->code;
     }
 
-    public function addAdmin(Admin $admin): static
+    public function setCode(string $code): static
     {
-        if (!$this->admins->contains($admin)) {
-            $this->admins->add($admin);
-            $admin->setFonction($this);
-        }
-
-        return $this;
-    }
-
-    public function removeAdmin(Admin $admin): static
-    {
-        if ($this->admins->removeElement($admin)) {
-            // set the owning side to null (unless already changed)
-            if ($admin->getFonction() === $this) {
-                $admin->setFonction(null);
-            }
-        }
+        $this->code = $code;
 
         return $this;
     }

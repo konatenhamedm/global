@@ -3,6 +3,9 @@
 namespace App\DataFixtures;
 
 use App\Entity\Admin;
+use App\Entity\Civilite;
+use App\Entity\Fonction;
+use App\Entity\Genre;
 use App\Entity\User;
 use App\Repository\CiviliteRepository;
 use App\Repository\FonctionRepository;
@@ -37,9 +40,9 @@ class UserFixtures extends Fixture
         $admin->setNom("Admin");
         $admin->setPrenoms("Admin");
         $admin->setContact("000000000");
-        $admin->setFonction($this->fonctionRepository->find(1));
-        $admin->setCivilite($this->civiliteRepository->find(1));
-        $admin->setGenre($this->genreRepository->find(1));
+        $admin->setCivilite($this->getReference(CiviliteFixtures::DEFAULT_CIVILITE_REFERENCE, Civilite::class));
+        $admin->setFonction($this->getReference(FonctionFixtures::DEFAULT_FONCTION_REFERENCE, Fonction::class));
+        $admin->setGenre($this->getReference(GenreFixtures::DEFAULT_GENRE_REFERENCE, Genre::class));
         $admin->setCreatedAtValue(new \DateTime());
         $admin->setUpdatedAt(new \DateTime());
 
@@ -52,8 +55,9 @@ class UserFixtures extends Fixture
         $utilisateur = new User();
 
         $utilisateur->setPersonne($admin);
+        $utilisateur->setTypeUser(User::TYPE['ADMIN']);
         $utilisateur->setEmail('admin@gmail.com');
-        $utilisateur->setPassword($this->hasher->hashPassword($utilisateur, 'admin_ufr'));
+        $utilisateur->setPassword($this->hasher->hashPassword($utilisateur, 'admin_global'));
         
         // $product = new Product();
         // $manager->persist($product);
