@@ -126,9 +126,9 @@ class ApiSpecificationController extends ApiInterface
 
         $data = json_decode($request->getContent(), true);
         $specification = new Specification();
-        $specification->setLibelle($data['libelle']);
-        $specification->setCreatedBy($this->userRepository->find($data['userUpdate']));
-        $specification->setUpdatedBy($this->userRepository->find($data['userUpdate']));
+        $specification->setLibelle($request->get('libelle'));
+        $specification->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
+        $specification->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
         $specification->setCreatedAtValue(new DateTime());
         $specification->setUpdatedAt(new DateTime());
 

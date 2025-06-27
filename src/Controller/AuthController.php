@@ -49,10 +49,10 @@ class AuthController extends ApiInterface
 
         $data = json_decode($request->getContent(), true);
         $user = new User();
-        $user->setEmail($data['email']);
+        $user->setEmail($request->get('email'));
         $user->setRoles(['ROLE_USER']);
         $user->setPassword(
-            $this->hasher->hashPassword($user, $data['password'])
+            $this->hasher->hashPassword($user, $request->get('password'))
         );
         $user->setTypeUser("CLIENT");
        
@@ -64,7 +64,7 @@ class AuthController extends ApiInterface
 
             $userRepository->add($user, true);
             $info_user = [
-                'login' => $data['email'],
+                'login' => $request->get('email'),
 
             ];
 
@@ -73,7 +73,7 @@ class AuthController extends ApiInterface
             // TO DO
             $sendMailService->send(
                 'tester@myonmci.ci',
-                $data['email'],
+                $request->get('email'),
                 'Informations',
                 'content_mail',
                 $context

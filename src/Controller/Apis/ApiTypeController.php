@@ -126,9 +126,9 @@ class ApiTypeController extends ApiInterface
 
         $data = json_decode($request->getContent(), true);
         $type = new Type();
-        $type->setLibelle($data['libelle']);
-        $type->setCreatedBy($this->userRepository->find($data['userUpdate']));
-        $type->setUpdatedBy($this->userRepository->find($data['userUpdate']));
+        $type->setLibelle($request->get('libelle'));
+        $type->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
+        $type->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
         $type->setCreatedAtValue(new DateTime());
         $type->setUpdatedAt(new DateTime());
 

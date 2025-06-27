@@ -126,9 +126,9 @@ class ApiLocaliteController extends ApiInterface
 
         $data = json_decode($request->getContent(), true);
         $localite = new Localite();
-        $localite->setLibelle($data['libelle']);
-        $localite->setCreatedBy($this->userRepository->find($data['userUpdate']));
-        $localite->setUpdatedBy($this->userRepository->find($data['userUpdate']));
+        $localite->setLibelle($request->get('libelle'));
+        $localite->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
+        $localite->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
         $localite->setCreatedAtValue(new DateTime());
         $localite->setUpdatedAt(new DateTime());
 

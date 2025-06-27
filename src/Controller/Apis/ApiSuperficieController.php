@@ -126,9 +126,9 @@ class ApiSuperficieController extends ApiInterface
 
         $data = json_decode($request->getContent(), true);
         $superficie = new Superficie();
-        $superficie->setLibelle($data['libelle']);
-        $superficie->setCreatedBy($this->userRepository->find($data['userUpdate']));
-        $superficie->setUpdatedBy($this->userRepository->find($data['userUpdate']));
+        $superficie->setLibelle($request->get('libelle'));
+        $superficie->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
+        $superficie->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
         $superficie->setCreatedAtValue(new DateTime());
         $superficie->setUpdatedAt(new DateTime());
 

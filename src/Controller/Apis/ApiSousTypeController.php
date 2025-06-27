@@ -126,9 +126,9 @@ class ApiSousTypeController extends ApiInterface
 
         $data = json_decode($request->getContent(), true);
         $sousType = new SousType();
-        $sousType->setLibelle($data['libelle']);
-        $sousType->setCreatedBy($this->userRepository->find($data['userUpdate']));
-        $sousType->setUpdatedBy($this->userRepository->find($data['userUpdate']));
+        $sousType->setLibelle($request->get('libelle'));
+        $sousType->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
+        $sousType->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
         $sousType->setCreatedAtValue(new DateTime());
         $sousType->setUpdatedAt(new DateTime());
 

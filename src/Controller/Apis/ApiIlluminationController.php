@@ -126,9 +126,9 @@ class ApiIlluminationController extends ApiInterface
 
         $data = json_decode($request->getContent(), true);
         $illumination = new Illumination();
-        $illumination->setLibelle($data['libelle']);
-        $illumination->setCreatedBy($this->userRepository->find($data['userUpdate']));
-        $illumination->setUpdatedBy($this->userRepository->find($data['userUpdate']));
+        $illumination->setLibelle($request->get('libelle'));
+        $illumination->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
+        $illumination->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
         $illumination->setCreatedAtValue(new DateTime());
         $illumination->setUpdatedAt(new DateTime());
 

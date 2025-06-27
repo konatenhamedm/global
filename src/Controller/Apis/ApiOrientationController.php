@@ -126,9 +126,9 @@ class ApiOrientationController extends ApiInterface
 
         $data = json_decode($request->getContent(), true);
         $orientation = new Orientation();
-        $orientation->setLibelle($data['libelle']);
-        $orientation->setCreatedBy($this->userRepository->find($data['userUpdate']));
-        $orientation->setUpdatedBy($this->userRepository->find($data['userUpdate']));
+        $orientation->setLibelle($request->get('libelle'));
+        $orientation->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
+        $orientation->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
         $orientation->setCreatedAtValue(new DateTime());
         $orientation->setUpdatedAt(new DateTime());
 

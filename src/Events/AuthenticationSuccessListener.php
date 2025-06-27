@@ -43,7 +43,7 @@ class AuthenticationSuccessListener
             $userData = $this->userRepository->find($user->getId());
            
 
-            $data['data'] =   [
+            $request->get('data'] =   [
                 'id' => $user->getId(),
                 'email' => $user->getEmail(),
                 'fonction' => $userData->getTypeUser() == "ADMIN" ? $userData->getPersonne()->getFonction()->getLibelle()  : null,

@@ -157,32 +157,32 @@ class ApiClientController extends ApiInterface
 
         $client = new Client();
 
-        $type = $typeClientRepository->findOneBy(['code'=> $data['type']])->getCode();
+        $type = $typeClientRepository->findOneBy(['code'=> $request->get('type')])->getCode();
 
         if($type == "individual"){
-            $client->setTypeClient($typeClientRepository->find($data['type']));
-            $client->setNom($data['nom']);
-            $client->setPrenoms($data['prenoms']);
-            $client->setContact($data['contact']);
-            $client->setEmail($data['email']);
+            $client->setTypeClient($typeClientRepository->find($request->get('type')));
+            $client->setNom($request->get('nom'));
+            $client->setPrenoms($request->get('prenoms'));
+            $client->setContact($request->get('contact'));
+            $client->setEmail($request->get('email'));
 
 
         }else{
-            $client->setTypeClient($typeClientRepository->find($data['type']));
-            $client->setDenomination($data['denomination']);
-            $client->setCompteContribuable($data['compteContribuable']);
-            $client->setAdresse($data['adresse']);
-            $client->setTelComptabilite($data['telComptabilite']);
-            $client->setEmailComptabilite($data['emailComptabilite']);
-            $client->setNomStructureFacture($data['nomStructureFacture']);
-            $client->setLocalisation($data['localisation']);
-            $client->setRegistreCommerce($data['registreCommerce']);
-            $client->setEmail($data['email']);
-            $client->setContact($data['contact']);
+            $client->setTypeClient($typeClientRepository->find($request->get('type')));
+            $client->setDenomination($request->get('denomination'));
+            $client->setCompteContribuable($request->get('compteContribuable'));
+            $client->setAdresse($request->get('adresse'));
+            $client->setTelComptabilite($request->get('telComptabilite'));
+            $client->setEmailComptabilite($request->get('emailComptabilite'));
+            $client->setNomStructureFacture($request->get('nomStructureFacture'));
+            $client->setLocalisation($request->get('localisation'));
+            $client->setRegistreCommerce($request->get('registreCommerce'));
+            $client->setEmail($request->get('email'));
+            $client->setContact($request->get('contact'));
         }
 
-        $client->setCreatedBy($this->userRepository->find($data['userUpdate']));
-        $client->setUpdatedBy($this->userRepository->find($data['userUpdate']));
+        $client->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
+        $client->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
         $client->setCreatedAtValue(new DateTime());
         $client->setUpdatedAt(new DateTime());
 
@@ -191,7 +191,7 @@ class ApiClientController extends ApiInterface
             return $errorResponse; // Retourne la réponse d'erreur si des erreurs sont présentes
         } else {
 
-            $user = $userRepository->find($data['userId']);
+            $user = $userRepository->find($request->get('userId'));
             
             $clientRepository->add($client, true);
             $user->setPersonne($client);

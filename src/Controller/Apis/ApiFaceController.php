@@ -113,10 +113,13 @@ class ApiFaceController extends ApiInterface
                     properties: [
                         new OA\Property(property: "numFace", type: "string"),
                         new OA\Property(property: "code", type: "string"),
-                        new OA\Property(property: "panneau", type: "string"),
+                        new OA\Property(property: "panneauId", type: "string"),
                         new OA\Property(property: "prix", type: "string"),
                         new OA\Property(property: "userUpdate", type: "string"),
-                        new OA\Property(property: "image", type: "string", format: "binary"), //cv
+                        new OA\Property(property: "imagePrincipale", type: "string", format: "binary"), //photo
+                        new OA\Property(property: "imageSecondaire1", type: "string", format: "binary"), //photo
+                        new OA\Property(property: "imageSecondaire2", type: "string", format: "binary"), //photo
+                        new OA\Property(property: "imageSecondaire3", type: "string", format: "binary"), //photo
 
 
                     ],
@@ -139,13 +142,37 @@ class ApiFaceController extends ApiInterface
         $face = new Face();
         $face->setNumFace($request->get('numFace'));
         $face->setCode($request->get("code"));
-        $face->setPanneau($request->get('panneau'));
-        $image = $request->files->get('image');
+        $face->setPanneau($panneauRepository->find($request->get('panneauId')));
 
-        if ($image) {
-            $fichier = $this->utils->sauvegardeFichier($filePath, $filePrefix, $image, self::UPLOAD_PATH);
+
+        $image1 = $request->files->get('imagePrincipale');
+        $image2 = $request->files->get('imageSecondaire1');
+        $image3 = $request->files->get('imageSecondaire2');
+        $image4 = $request->files->get('imageSecondaire3');
+
+
+        if ($image1) {
+            $fichier = $this->utils->sauvegardeFichier($filePath, $filePrefix, $image1, self::UPLOAD_PATH);
             if ($fichier) {
-                $face->setImage($fichier);
+                $face->setImagePrincipale($fichier);
+            }
+        }
+        if ($image2) {
+            $fichier = $this->utils->sauvegardeFichier($filePath, $filePrefix, $image2, self::UPLOAD_PATH);
+            if ($fichier) {
+                $face->setImageSecondaire1($fichier);
+            }
+        }
+        if ($image3) {
+            $fichier = $this->utils->sauvegardeFichier($filePath, $filePrefix, $image3, self::UPLOAD_PATH);
+            if ($fichier) {
+                $face->setImageSecondaire2($fichier);
+            }
+        }
+        if ($image4) {
+            $fichier = $this->utils->sauvegardeFichier($filePath, $filePrefix, $image4, self::UPLOAD_PATH);
+            if ($fichier) {
+                $face->setImageSecondaire3($fichier);
             }
         }
 
@@ -179,11 +206,13 @@ class ApiFaceController extends ApiInterface
                     properties: [
                         new OA\Property(property: "numFace", type: "string"),
                         new OA\Property(property: "code", type: "string"),
-                        new OA\Property(property: "panneau", type: "string"),
+                        new OA\Property(property: "panneauId", type: "string"),
                         new OA\Property(property: "prix", type: "string"),
-
                         new OA\Property(property: "userUpdate", type: "string"),
-                        new OA\Property(property: "image", type: "string", format: "binary"), //cv
+                        new OA\Property(property: "imagePrincipale", type: "string", format: "binary"), //photo
+                        new OA\Property(property: "imageSecondaire1", type: "string", format: "binary"), //photo
+                        new OA\Property(property: "imageSecondaire2", type: "string", format: "binary"), //photo
+                        new OA\Property(property: "imageSecondaire3", type: "string", format: "binary"), //photo
 
 
                     ],
@@ -211,14 +240,38 @@ class ApiFaceController extends ApiInterface
                 $face->setNumFace($request->get('numFace'));
                 $face->setCode($request->get("code"));
                 $face->setPanneau($request->get('panneau'));
-                $image = $request->files->get('image');
 
-                if ($image) {
-                    $fichier = $this->utils->sauvegardeFichier($filePath, $filePrefix, $image, self::UPLOAD_PATH);
+                $image1 = $request->files->get('imagePrincipale');
+                $image2 = $request->files->get('imageSecondaire1');
+                $image3 = $request->files->get('imageSecondaire2');
+                $image4 = $request->files->get('imageSecondaire3');
+
+
+                if ($image1) {
+                    $fichier = $this->utils->sauvegardeFichier($filePath, $filePrefix, $image1, self::UPLOAD_PATH);
                     if ($fichier) {
-                        $face->setImage($fichier);
+                        $face->setImagePrincipale($fichier);
                     }
                 }
+                if ($image2) {
+                    $fichier = $this->utils->sauvegardeFichier($filePath, $filePrefix, $image2, self::UPLOAD_PATH);
+                    if ($fichier) {
+                        $face->setImageSecondaire1($fichier);
+                    }
+                }
+                if ($image3) {
+                    $fichier = $this->utils->sauvegardeFichier($filePath, $filePrefix, $image3, self::UPLOAD_PATH);
+                    if ($fichier) {
+                        $face->setImageSecondaire2($fichier);
+                    }
+                }
+                if ($image4) {
+                    $fichier = $this->utils->sauvegardeFichier($filePath, $filePrefix, $image4, self::UPLOAD_PATH);
+                    if ($fichier) {
+                        $face->setImageSecondaire3($fichier);
+                    }
+                }
+
 
                 $face->setPrix($request->get('prix'));
                 $face->setUpdatedBy($this->userRepository->find($data->userUpdate));

@@ -77,44 +77,44 @@ class ApiValidationController extends ApiInterface
 
         try {
 
-            $commande = $commandeRepository->find($data['commandeId']);
+            $commande = $commandeRepository->find($request->get('commandeId'));
 
-            $commande->setEtat($data['etat']);
+            $commande->setEtat($request->get('etat'));
             $commande->setUpdatedAt(new DateTime());
-            $commande->setUpdatedBy($this->userRepository->find($data['userUpdate']));
+            $commande->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
 
             $commandeRepository->add($commande, true);
 
             $validation = new Validation();
             $validation->setCommande($commande);
-            $validation->getEtape($data['etat']);
+            $validation->getEtape($request->get('etat'));
             $validation->setDateValidation(new DateTime());
-            $validation->setCommentaire($data['commentaire']);
+            $validation->setCommentaire($request->get('commentaire'));
 
             $validationRepository->add($validation, true);
             $message = "";
 
 
-            if ($data['etat'] == "devis_attente") {
+            if ($request->get('etat') == "devis_attente") {
                 $message = "Votre dossier vient de passer l'etape d'acceptation et est en séance d'analyse";
-            } elseif ($data['etat'] == "proforma_attente_validation") {
-                $message = "Votre dossier vient de passer d'être réjeté pour la raison suivante: " . $data['commentaire'];
-            } elseif ($data['etat'] == "contrat_attente_creation") {
+            } elseif ($request->get('etat') == "proforma_attente_validation") {
+                $message = "Votre dossier vient de passer d'être réjeté pour la raison suivante: " . $request->get('commentaire');
+            } elseif ($request->get('etat') == "contrat_attente_creation") {
 
-                $message = "Votre dossier vient de passer d'être réfusé pour la raison suivante: " . $data['commentaire'];
-            } elseif ($data['etat'] == "contrat_attente_validation") {
+                $message = "Votre dossier vient de passer d'être réfusé pour la raison suivante: " . $request->get('commentaire');
+            } elseif ($request->get('etat') == "contrat_attente_validation") {
                 $message = "Votre dossier a été jugé conforme et est désormais en attente de validation finale. Vous recevrez une notification dès que le processus sera complété.";
-            } elseif ($data['etat'] == "contrat_en_cours") {
+            } elseif ($request->get('etat') == "contrat_en_cours") {
                 $message = "Votre dossier a été jugé conforme et est désormais en attente de validation finale. Vous recevrez une notification dès que le processus sera complété.";
-            } elseif ($data['etat'] == "contrat_cloture") {
+            } elseif ($request->get('etat') == "contrat_cloture") {
                 $message = "Votre dossier a été jugé conforme et est désormais en attente de validation finale. Vous recevrez une notification dès que le processus sera complété.";
             }
 
-            $email = $userRepository->find($data['userId'])->getUserIdentifier();
+            $email = $userRepository->find($request->get('userId'))->getUserIdentifier();
 
             $info_user = [
                 'user' => $email,
-                'etape' => $data['etat'],
+                'etape' => $request->get('etat'),
                 'message' => $message
             ];
 

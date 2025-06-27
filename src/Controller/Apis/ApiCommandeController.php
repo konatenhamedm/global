@@ -190,14 +190,14 @@ class ApiCommandeController extends ApiInterface
         $data = json_decode($request->getContent(), true);
         $commande = new Commande();
         $commande->setLibelle($this->generateLibelleParJour());
-        $commande->setImpressionVisuelle($data['impressionVisuelle']);
-        $commande->setClient($clientRepository->find($data['client']));
-        $commande->setMontant($data['montant']);
+        $commande->setImpressionVisuelle($request->get('impressionVisuelle'));
+        $commande->setClient($clientRepository->find($request->get('client')));
+        $commande->setMontant($request->get('montant'));
         $commande->setCode($this->code());
-        $commande->setDateDebut(new \DateTime($data['dateDebut']));
-        $commande->setDateFin(new \DateTime($data['dateFin']));
-        $commande->setCreatedBy($this->userRepository->find($data['userUpdate']));
-        $commande->setUpdatedBy($this->userRepository->find($data['userUpdate']));
+        $commande->setDateDebut(new \DateTime($request->get('dateDebut')));
+        $commande->setDateFin(new \DateTime($request->get('dateFin')));
+        $commande->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
+        $commande->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
         $commande->setCreatedAtValue(new DateTime());
         $commande->setUpdatedAt(new DateTime());
 
@@ -209,33 +209,33 @@ class ApiCommandeController extends ApiInterface
 
 
 
-        $lignes = $data['lignes'];
+        $lignes = $request->get('lignes');
         foreach ($lignes as $ligneData) {
             $face = $faceRepository->find($ligneData['face']);
 
             $ligneEntity = new Ligne();
             $ligneEntity->setFace($face);
             $ligneEntity->setPrix($face->getPrix());
-            $ligneEntity->setDateDebut(new \DateTime($data['dateDebut']));
-            $ligneEntity->setDateFin(new \DateTime($data['dateFin']));
+            $ligneEntity->setDateDebut(new \DateTime($request->get('dateDebut')));
+            $ligneEntity->setDateFin(new \DateTime($request->get('dateFin')));
             $ligneEntity->setCommande($commande);
 
             $commandeRepository->add($commande, true); 
             $ligneRepository->add($ligneEntity, true);
 
             $face->setEtat(Face::ETAT['Reserve']);
-            $face->dateDebut(new \DateTime($data['dateDebut']));
-            $face->setDateFin(new \DateTime($data['dateFin']));
+            $face->dateDebut(new \DateTime($request->get('dateDebut')));
+            $face->setDateFin(new \DateTime($request->get('dateFin')));
             $faceRepository->add($face, true);
         }
 
-        if($data['impressionVisuelle'] == "avec"){
+        if($request->get('impressionVisuelle') == "avec"){
 
             $avecImpression = new AvecImpression();
             $avecImpression->setCommande($commande);
             $avecImpression->setEtape('etape_1');
-            $avecImpression->setCreatedBy($this->userRepository->find($data['userUpdate']));
-            $avecImpression->setUpdatedBy($this->userRepository->find($data['userUpdate']));
+            $avecImpression->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
+            $avecImpression->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
             $avecImpression->setCreatedAtValue(new DateTime());
             $avecImpression->setUpdatedAt(new DateTime());
             $avecImpressionRepository->add($avecImpression, true);
@@ -245,8 +245,8 @@ class ApiCommandeController extends ApiInterface
            $sansImpression = new SansImpression();
             $sansImpression->setCommande($commande);
             $sansImpression->setEtape('etape_1');
-            $sansImpression->setCreatedBy($this->userRepository->find($data['userUpdate']));
-            $sansImpression->setUpdatedBy($this->userRepository->find($data['userUpdate']));
+            $sansImpression->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
+            $sansImpression->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
             $sansImpression->setCreatedAtValue(new DateTime());
             $sansImpression->setUpdatedAt(new DateTime());
 

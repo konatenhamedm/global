@@ -126,9 +126,9 @@ class ApiSubstratController extends ApiInterface
 
         $data = json_decode($request->getContent(), true);
         $substrat = new Substrat();
-        $substrat->setLibelle($data['libelle']);
-        $substrat->setCreatedBy($this->userRepository->find($data['userUpdate']));
-        $substrat->setUpdatedBy($this->userRepository->find($data['userUpdate']));
+        $substrat->setLibelle($request->get('libelle'));
+        $substrat->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
+        $substrat->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
         $substrat->setCreatedAtValue(new DateTime());
         $substrat->setUpdatedAt(new DateTime());
 

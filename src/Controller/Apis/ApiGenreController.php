@@ -126,10 +126,10 @@ class ApiGenreController extends ApiInterface
 
         $data = json_decode($request->getContent(), true);
         $genre = new Genre();
-        $genre->setLibelle($data['libelle']);
-        $genre->setCode($data['code']);
-        $genre->setCreatedBy($this->userRepository->find($data['userUpdate']));
-        $genre->setUpdatedBy($this->userRepository->find($data['userUpdate']));
+        $genre->setLibelle($request->get('libelle'));
+        $genre->setCode($request->get('code'));
+        $genre->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
+        $genre->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
         $genre->setCreatedAtValue(new DateTime());
         $genre->setUpdatedAt(new DateTime());
 

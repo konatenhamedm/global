@@ -126,10 +126,10 @@ class ApiCiviliteController extends ApiInterface
 
         $data = json_decode($request->getContent(), true);
         $civilite = new Civilite();
-        $civilite->setLibelle($data['libelle']);
-        $civilite->setCode($data['code']);
-        $civilite->setCreatedBy($this->userRepository->find($data['userUpdate']));
-        $civilite->setUpdatedBy($this->userRepository->find($data['userUpdate']));
+        $civilite->setLibelle($request->get('libelle'));
+        $civilite->setCode($request->get('code'));
+        $civilite->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
+        $civilite->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
         $civilite->setCreatedAtValue(new DateTime());
         $civilite->setUpdatedAt(new DateTime());
 

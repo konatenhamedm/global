@@ -143,8 +143,9 @@ class ApiPanneauController extends ApiInterface
                                 new OA\Property(property: "imageSecondaire1", type: "string", format: "binary"), //photo
                                 new OA\Property(property: "imageSecondaire2", type: "string", format: "binary"), //photo
                                 new OA\Property(property: "imageSecondaire3", type: "string", format: "binary"), //photo
-                                new OA\Property(property: "dateDebut", type: "string"),
-                                new OA\Property(property: "dateFin", type: "string"),
+                                new OA\Property(property: "prix", type: "string"),
+                                new OA\Property(property: "numFace", type: "string"),
+                                new OA\Property(property: "code", type: "string"),
                             ]
                         ),
                     ),
@@ -203,7 +204,6 @@ class ApiPanneauController extends ApiInterface
             $face = new Face();
             $face->setNumFace($face['numFace']);
             $face->setCode($face['code']);
-            $face->setPrix($face['prix']);
             $face->setPrix($face['prix']);
 
 

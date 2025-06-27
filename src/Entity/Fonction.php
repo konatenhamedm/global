@@ -12,7 +12,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[Table(name: 'param_fonction')]
 #[UniqueEntity('code', message: 'Ce code est déjà utilisé')]
 class Fonction
-{
+{ use TraitEntity;
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

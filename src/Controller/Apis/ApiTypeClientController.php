@@ -126,10 +126,10 @@ class ApiTypeClientController extends ApiInterface
 
         $data = json_decode($request->getContent(), true);
         $typeClient = new TypeClient();
-        $typeClient->setLibelle($data['libelle']);
-        $typeClient->setCode($data['code']);
-        $typeClient->setCreatedBy($this->userRepository->find($data['userUpdate']));
-        $typeClient->setUpdatedBy($this->userRepository->find($data['userUpdate']));
+        $typeClient->setLibelle($request->get('libelle'));
+        $typeClient->setCode($request->get('code'));
+        $typeClient->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
+        $typeClient->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
         $typeClient->setCreatedAtValue(new DateTime());
         $typeClient->setUpdatedAt(new DateTime());
 

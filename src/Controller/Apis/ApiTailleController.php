@@ -126,9 +126,9 @@ class ApiTailleController extends ApiInterface
 
         $data = json_decode($request->getContent(), true);
         $taille = new Taille();
-        $taille->setDimenssions($data['dimension']);
-        $taille->setCreatedBy($this->userRepository->find($data['userUpdate']));
-        $taille->setUpdatedBy($this->userRepository->find($data['userUpdate']));
+        $taille->setDimenssions($request->get('dimension'));
+        $taille->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
+        $taille->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
         $taille->setCreatedAtValue(new DateTime());
         $taille->setUpdatedAt(new DateTime());
 

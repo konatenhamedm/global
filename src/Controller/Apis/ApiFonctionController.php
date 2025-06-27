@@ -126,9 +126,9 @@ class ApiFonctionController extends ApiInterface
 
         $data = json_decode($request->getContent(), true);
         $fonction = new Fonction();
-        $fonction->setLibelle($data['libelle']);
-        $fonction->setCreatedBy($this->userRepository->find($data['userUpdate']));
-        $fonction->setUpdatedBy($this->userRepository->find($data['userUpdate']));
+        $fonction->setLibelle($request->get('libelle'));
+        $fonction->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
+        $fonction->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
         $fonction->setCreatedAtValue(new DateTime());
         $fonction->setUpdatedAt(new DateTime());
 

@@ -126,10 +126,10 @@ class ApiTaxeController extends ApiInterface
 
         $data = json_decode($request->getContent(), true);
         $taxe = new Taxe();
-        $taxe->setLibelle($data['libelle']);
-        $taxe->setPourcent($data['percent']);
-        $taxe->setCreatedBy($this->userRepository->find($data['userUpdate']));
-        $taxe->setUpdatedBy($this->userRepository->find($data['userUpdate']));
+        $taxe->setLibelle($request->get('libelle'));
+        $taxe->setPourcent($request->get('percent'));
+        $taxe->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
+        $taxe->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
         $taxe->setCreatedAtValue(new DateTime());
         $taxe->setUpdatedAt(new DateTime());
 
