@@ -347,7 +347,7 @@ class ApiValidationController extends ApiInterface
                 new OA\Property(property: "rapportDepose", type: "string", format: "binary"),
 
                 //ETAPE 5
-                new OA\Property(property: "rapportDepose", type: "string", format: "binary"),
+               
                 new OA\Property(property: "dateFinalisation", type: "date"),
                 new OA\Property(property: "commentaireFinalisation", type: "string"),
 
