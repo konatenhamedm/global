@@ -213,7 +213,7 @@ class ApiValidationController extends ApiInterface
             new OA\Response(response: 401, description: "Invalid credentials")
         ]
     )]
-    #[OA\Tag(name: 'commande')]
+    #[OA\Tag(name: 'validation')]
     public function validationAvecImpression(Request $request, AvecImpressionRepository $avecImpressionRepository): Response
     {
 
