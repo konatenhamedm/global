@@ -47,7 +47,7 @@ class AuthenticationSuccessListener
                 'id' => $user->getId(),
                 'email' => $user->getEmail(),
                 'fonction' => $userData->getTypeUser() == "ADMIN" ? $userData->getPersonne()->getFonction()->getLibelle()  : null,
-                'client' => $userData->getPersonne() ? $userData->getPersonne()->getId() : null,
+                'client' => $userData->getTypeUser() == "ADMIN" ? null : ($userData->getPersonne() ? $userData->getPersonne()->getId() : null),
                 'typeUser' => $userData->getTypeUser(),
                 'typeUser'=> $userData->getTypeUser() == "ADMIN" ? "ADMIN" : "CLIENT",
                    

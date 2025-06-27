@@ -109,7 +109,7 @@ class ApiLocaliteController extends ApiInterface
             content: new OA\JsonContent(
                 properties: [
                     new OA\Property(property: "libelle", type: "string"),
-                    new OA\Property(property: "code", type: "string"),
+                    //new OA\Property(property: "code", type: "string"),
                     new OA\Property(property: "userUpdate", type: "string"),
 
                 ],
@@ -153,7 +153,7 @@ class ApiLocaliteController extends ApiInterface
             content: new OA\JsonContent(
                 properties: [
                     new OA\Property(property: "libelle", type: "string"),
-                    new OA\Property(property: "code", type: "string"),
+                    //new OA\Property(property: "code", type: "string"),
                     new OA\Property(property: "userUpdate", type: "string"),
 
                 ],

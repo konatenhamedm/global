@@ -25,9 +25,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Group(["group1"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
+    #[Group(["group1"])]
     private ?string $email = null;
 
     /**
@@ -44,6 +46,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
 
     #[ORM\Column(length: 255,nullable: true)]
+    #[Group(["group1"])]
     private ?string $typeUser = null;
 
     #[ORM\OneToOne(inversedBy: 'user', cascade: ['persist', 'remove'])]
