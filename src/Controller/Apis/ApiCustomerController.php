@@ -138,7 +138,7 @@ class ApiCustomerController extends ApiInterface
                 'panneauTypes' => $panneauTypes,
                 'panneauSousTypes' => $panneauSousTypes,
                 'superficies' => $superficies,
-                'oriantation' => $orientations,
+                'orientations' => $orientations,
             ];
 
             $response = $this->responseData($data, 'group_pro', ['Content-Type' => 'application/json']);
