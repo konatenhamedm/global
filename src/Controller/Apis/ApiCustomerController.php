@@ -70,7 +70,7 @@ class ApiCustomerController extends ApiInterface
             $panneauTypes = [];
             $panneauSousTypes = [];
             $superficies = [];
-            $oriantation = [];
+            $orientations = [];
 
             foreach ($tailleRepository->findAll() as $key => $taille) {
                 $tailles[] = [
@@ -122,10 +122,10 @@ class ApiCustomerController extends ApiInterface
                 ];
             }
 
-            foreach ($orientationRepository->findAll() as  $oriantation) {
-                $oriantation[] = [
-                    'id' =>  $oriantation->getId(),
-                    'libelle' =>  $oriantation->getLibelle()
+            foreach ($orientationRepository->findAll() as  $orientation) {
+                $orientations[] = [
+                    'id' =>  $orientation->getId(),
+                    'libelle' =>  $orientation->getLibelle()
                 ];
             }
 
@@ -138,7 +138,7 @@ class ApiCustomerController extends ApiInterface
                 'panneauTypes' => $panneauTypes,
                 'panneauSousTypes' => $panneauSousTypes,
                 'superficies' => $superficies,
-                'oriantation' => $oriantation,
+                'oriantation' => $orientations,
             ];
 
             $response = $this->responseData($data, 'group_pro', ['Content-Type' => 'application/json']);
