@@ -171,8 +171,8 @@ class ApiSousTypeController extends ApiInterface
             $data = json_decode($request->getContent());
             if ($sousType != null) {
 
-                $sousType->setLibelle($data->libelle);
-                $sousType->setUpdatedBy($this->userRepository->find($data->userUpdate));
+                $sousType->setLibelle($request->get('libelle'));
+                $sousType->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
                 $sousType->setUpdatedAt(new \DateTime());
                 $errorResponse = $this->errorResponse($sousType);
 
@@ -257,7 +257,7 @@ class ApiSousTypeController extends ApiInterface
         try {
             $data = json_decode($request->getContent());
 
-            foreach ($data->ids as $key => $value) {
+            foreach ($request->get('ids') as $key => $value) {
                 $sousType = $villeRepository->find($value['id']);
 
                 if ($sousType != null) {

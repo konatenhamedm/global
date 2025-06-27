@@ -172,9 +172,9 @@ class ApiGenreController extends ApiInterface
             $data = json_decode($request->getContent());
             if ($genre != null) {
 
-                $genre->setLibelle($data->libelle);
-                $genre->setCode($data->code);
-                $genre->setUpdatedBy($this->userRepository->find($data->userUpdate));
+                $genre->setLibelle($request->get('libelle'));
+                $genre->setCode($request->get('code'));
+                $genre->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
                 $genre->setUpdatedAt(new \DateTime());
                 $errorResponse = $this->errorResponse($genre);
 
@@ -259,7 +259,7 @@ class ApiGenreController extends ApiInterface
         try {
             $data = json_decode($request->getContent());
 
-            foreach ($data->ids as $key => $value) {
+            foreach ($request->get('ids') as $key => $value) {
                 $genre = $villeRepository->find($value['id']);
 
                 if ($genre != null) {

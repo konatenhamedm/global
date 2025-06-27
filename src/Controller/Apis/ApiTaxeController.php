@@ -172,9 +172,9 @@ class ApiTaxeController extends ApiInterface
             $data = json_decode($request->getContent());
             if ($taxe != null) {
 
-                $taxe->setLibelle($data->libelle);
-                $taxe->setPourcent($data->percent);
-                $taxe->setUpdatedBy($this->userRepository->find($data->userUpdate));
+                $taxe->setLibelle($request->get('libelle'));
+                $taxe->setPourcent($request->get('percent'));
+                $taxe->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
                 $taxe->setUpdatedAt(new \DateTime());
                 $errorResponse = $this->errorResponse($taxe);
 
@@ -259,7 +259,7 @@ class ApiTaxeController extends ApiInterface
         try {
             $data = json_decode($request->getContent());
 
-            foreach ($data->ids as $key => $value) {
+            foreach ($request->get('ids') as $key => $value) {
                 $taxe = $villeRepository->find($value['id']);
 
                 if ($taxe != null) {

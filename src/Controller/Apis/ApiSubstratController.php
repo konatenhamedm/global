@@ -171,8 +171,8 @@ class ApiSubstratController extends ApiInterface
             $data = json_decode($request->getContent());
             if ($substrat != null) {
 
-                $substrat->setLibelle($data->libelle);
-                $substrat->setUpdatedBy($this->userRepository->find($data->userUpdate));
+                $substrat->setLibelle($request->get('libelle'));
+                $substrat->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
                 $substrat->setUpdatedAt(new \DateTime());
                 $errorResponse = $this->errorResponse($substrat);
 
@@ -257,7 +257,7 @@ class ApiSubstratController extends ApiInterface
         try {
             $data = json_decode($request->getContent());
 
-            foreach ($data->ids as $key => $value) {
+            foreach ($request->get('ids') as $key => $value) {
                 $substrat = $villeRepository->find($value['id']);
 
                 if ($substrat != null) {

@@ -171,8 +171,8 @@ class ApiSuperficieController extends ApiInterface
             $data = json_decode($request->getContent());
             if ($superficie != null) {
 
-                $superficie->setLibelle($data->libelle);
-                $superficie->setUpdatedBy($this->userRepository->find($data->userUpdate));
+                $superficie->setLibelle($request->get('libelle'));
+                $superficie->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
                 $superficie->setUpdatedAt(new \DateTime());
                 $errorResponse = $this->errorResponse($superficie);
 
@@ -257,7 +257,7 @@ class ApiSuperficieController extends ApiInterface
         try {
             $data = json_decode($request->getContent());
 
-            foreach ($data->ids as $key => $value) {
+            foreach ($request->get('ids') as $key => $value) {
                 $superficie = $villeRepository->find($value['id']);
 
                 if ($superficie != null) {

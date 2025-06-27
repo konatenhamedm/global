@@ -171,8 +171,8 @@ class ApiLocaliteController extends ApiInterface
             $data = json_decode($request->getContent());
             if ($localite != null) {
 
-                $localite->setLibelle($data->libelle);
-                $localite->setUpdatedBy($this->userRepository->find($data->userUpdate));
+                $localite->setLibelle($request->get('libelle'));
+                $localite->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
                 $localite->setUpdatedAt(new \DateTime());
                 $errorResponse = $this->errorResponse($localite);
 
@@ -257,7 +257,7 @@ class ApiLocaliteController extends ApiInterface
         try {
             $data = json_decode($request->getContent());
 
-            foreach ($data->ids as $key => $value) {
+            foreach ($request->get('ids') as $key => $value) {
                 $localite = $villeRepository->find($value['id']);
 
                 if ($localite != null) {

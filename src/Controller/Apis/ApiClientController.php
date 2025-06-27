@@ -245,25 +245,25 @@ class ApiClientController extends ApiInterface
 
               $typeClient =  $client->getTypeClient()->getCode();
               if($typeClient == "individual"){            
-                $client->setNom($data->nom);
-                $client->setPrenoms($data->prenoms);
-                $client->setContact($data->contact);
-                $client->setEmail($data->email);
+                $client->setNom($request->get('nom'));
+                $client->setPrenoms($request->get('prenoms'));
+                $client->setContact($request->get('contact'));
+                $client->setEmail($request->get('email'));
               }else{
-                $client->setDenomination($data->denomination);
-                $client->setCompteContribuable($data->compteContribuable);
-                $client->setAdresse($data->adresse);
-                $client->setTelComptabilite($data->telComptabilite);
-                $client->setEmailComptabilite($data->emailComptabilite);
-                $client->setNomStructureFacture($data->nomStructureFacture);
-                $client->setLocalisation($data->localisation);
-                $client->setRegistreCommerce($data->registreCommerce);
-                $client->setEmail($data->email);
-                $client->setContact($data->contact);
+                $client->setDenomination($request->get('denomination'));
+                $client->setCompteContribuable($request->get('compteContribuable'));
+                $client->setAdresse($request->get('adresse'));
+                $client->setTelComptabilite($request->get('telComptabilite'));
+                $client->setEmailComptabilite($request->get('emailComptabilite'));
+                $client->setNomStructureFacture($request->get('nomStructureFacture'));
+                $client->setLocalisation($request->get('localisation'));
+                $client->setRegistreCommerce($request->get('registreCommerce'));
+                $client->setEmail($request->get('email'));
+                $client->setContact($request->get('contact'));
               }
 
-                $client->setCreatedBy($this->userRepository->find($data->userUpdate));
-                $client->setUpdatedBy($this->userRepository->find($data->userUpdate));
+                $client->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
+                $client->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
                 $client->setUpdatedAt(new \DateTime());
                 $errorResponse = $this->errorResponse($client);
 
@@ -348,7 +348,7 @@ class ApiClientController extends ApiInterface
         try {
             $data = json_decode($request->getContent());
 
-            foreach ($data->ids as $key => $value) {
+            foreach ($request->get('ids') as $key => $value) {
                 $client = $villeRepository->find($value['id']);
 
                 if ($client != null) {

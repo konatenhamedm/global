@@ -211,14 +211,14 @@ class ApiAdminController extends ApiInterface
             $data = json_decode($request->getContent());
             if ($admin != null) {
 
-                $admin->setGenre($genreRepository->find($data->genre));
-                $admin->setCivilite($civiliteRepository->find($data->civilite));
-                $admin->setNom($data->nom);
-                $admin->setPrenoms($data->prenoms);
-                $admin->setContact($data->contact);
-                $admin->setFonction($fonctionRepository->find($data->fonction));
-                $admin->setCreatedBy($this->userRepository->find($data->userUpdate));
-                $admin->setUpdatedBy($this->userRepository->find($data->userUpdate));
+                $admin->setGenre($genreRepository->find($request->get('genre')));
+                $admin->setCivilite($civiliteRepository->find($request->get('civilite')));
+                $admin->setNom($request->get('nom'));
+                $admin->setPrenoms($request->get('prenoms'));
+                $admin->setContact($request->get('contact'));
+                $admin->setFonction($fonctionRepository->find($request->get('fonction')));
+                $admin->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
+                $admin->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
                 $admin->setUpdatedAt(new \DateTime());
                 $errorResponse = $this->errorResponse($admin);
 
@@ -303,7 +303,7 @@ class ApiAdminController extends ApiInterface
         try {
             $data = json_decode($request->getContent());
 
-            foreach ($data->ids as $key => $value) {
+            foreach ($request->get('ids') as $key => $value) {
                 $admin = $villeRepository->find($value['id']);
 
                 if ($admin != null) {

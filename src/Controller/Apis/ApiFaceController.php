@@ -274,7 +274,7 @@ class ApiFaceController extends ApiInterface
 
 
                 $face->setPrix($request->get('prix'));
-                $face->setUpdatedBy($this->userRepository->find($data->userUpdate));
+                $face->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
                 $face->setUpdatedAt(new \DateTime());
 
 
@@ -361,7 +361,7 @@ class ApiFaceController extends ApiInterface
         try {
             $data = json_decode($request->getContent());
 
-            foreach ($data->ids as $key => $value) {
+            foreach ($request->get('ids') as $key => $value) {
                 $face = $villeRepository->find($value['id']);
 
                 if ($face != null) {

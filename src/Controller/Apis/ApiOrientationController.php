@@ -171,8 +171,8 @@ class ApiOrientationController extends ApiInterface
             $data = json_decode($request->getContent());
             if ($orientation != null) {
 
-                $orientation->setLibelle($data->libelle);
-                $orientation->setUpdatedBy($this->userRepository->find($data->userUpdate));
+                $orientation->setLibelle($request->get('libelle'));
+                $orientation->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
                 $orientation->setUpdatedAt(new \DateTime());
                 $errorResponse = $this->errorResponse($orientation);
 
@@ -257,7 +257,7 @@ class ApiOrientationController extends ApiInterface
         try {
             $data = json_decode($request->getContent());
 
-            foreach ($data->ids as $key => $value) {
+            foreach ($request->get('ids') as $key => $value) {
                 $orientation = $villeRepository->find($value['id']);
 
                 if ($orientation != null) {

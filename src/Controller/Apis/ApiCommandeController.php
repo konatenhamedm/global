@@ -315,7 +315,7 @@ class ApiCommandeController extends ApiInterface
         try {
             $data = json_decode($request->getContent());
 
-            foreach ($data->ids as $key => $value) {
+            foreach ($request->get('ids') as $key => $value) {
                 $commande = $villeRepository->find($value['id']);
 
                 if ($commande != null) {

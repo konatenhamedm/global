@@ -308,19 +308,19 @@ class ApiPanneauController extends ApiInterface
             if ($panneau != null) {
 
          
-                $panneau->setCode($data->code);
-                $panneau->setGpsLat($data->gpsLat);
-                $panneau->setGpsLong($data->gpsLong);
-                $panneau->setType($typeRepository->find($data->type));
-                $panneau->setIllumination($illuminationRepository->find($data->illumination));
-                $panneau->setSousType($sousTypeRepository->find($data->soustype));
-                $panneau->setSubstrat($substratRepository->find($data->substrat));
-                $panneau->setLocalite($localiteRepository->find($data->localite));
-                $panneau->setTaille($tailleRepository->find($data->taille));
-                $panneau->setSuperficie($superficieRepository->find($data->superficie));
-                $panneau->setOrientation($orientationRepository->find($data->orientation));
+                $panneau->setCode($request->get('code'));
+                $panneau->setGpsLat($request->get('gpsLat'));
+                $panneau->setGpsLong($request->get('gpsLong'));
+                $panneau->setType($typeRepository->find($request->get('type')));
+                $panneau->setIllumination($illuminationRepository->find($request->get('illumination')));
+                $panneau->setSousType($sousTypeRepository->find($request->get('soustype')));
+                $panneau->setSubstrat($substratRepository->find($request->get('substrat')));
+                $panneau->setLocalite($localiteRepository->find($request->get('localite')));
+                $panneau->setTaille($tailleRepository->find($request->get('taille')));
+                $panneau->setSuperficie($superficieRepository->find($request->get('superficie')));
+                $panneau->setOrientation($orientationRepository->find($request->get('orientation')));
                 
-                $panneau->setUpdatedBy($this->userRepository->find($data->userUpdate));
+                $panneau->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
                 $panneau->setUpdatedAt(new \DateTime());
                 $errorResponse = $this->errorResponse($panneau);
 
@@ -405,7 +405,7 @@ class ApiPanneauController extends ApiInterface
         try {
             $data = json_decode($request->getContent());
 
-            foreach ($data->ids as $key => $value) {
+            foreach ($request->get('ids') as $key => $value) {
                 $panneau = $villeRepository->find($value['id']);
 
                 if ($panneau != null) {

@@ -172,9 +172,9 @@ class ApiTypeClientController extends ApiInterface
             $data = json_decode($request->getContent());
             if ($typeClient != null) {
 
-                $typeClient->setLibelle($data->libelle);
-                $typeClient->setCode($data->code);
-                $typeClient->setUpdatedBy($this->userRepository->find($data->userUpdate));
+                $typeClient->setLibelle($request->get('libelle'));
+                $typeClient->setCode($request->get('code'));
+                $typeClient->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
                 $typeClient->setUpdatedAt(new \DateTime());
                 $errorResponse = $this->errorResponse($typeClient);
 
@@ -259,7 +259,7 @@ class ApiTypeClientController extends ApiInterface
         try {
             $data = json_decode($request->getContent());
 
-            foreach ($data->ids as $key => $value) {
+            foreach ($request->get('ids') as $key => $value) {
                 $typeClient = $villeRepository->find($value['id']);
 
                 if ($typeClient != null) {

@@ -171,8 +171,8 @@ class ApiFonctionController extends ApiInterface
             $data = json_decode($request->getContent());
             if ($fonction != null) {
 
-                $fonction->setLibelle($data->libelle);
-                $fonction->setUpdatedBy($this->userRepository->find($data->userUpdate));
+                $fonction->setLibelle($request->get('libelle'));
+                $fonction->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
                 $fonction->setUpdatedAt(new \DateTime());
                 $errorResponse = $this->errorResponse($fonction);
 
@@ -257,7 +257,7 @@ class ApiFonctionController extends ApiInterface
         try {
             $data = json_decode($request->getContent());
 
-            foreach ($data->ids as $key => $value) {
+            foreach ($request->get('ids') as $key => $value) {
                 $fonction = $villeRepository->find($value['id']);
 
                 if ($fonction != null) {

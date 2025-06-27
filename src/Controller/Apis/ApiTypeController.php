@@ -171,8 +171,8 @@ class ApiTypeController extends ApiInterface
             $data = json_decode($request->getContent());
             if ($type != null) {
 
-                $type->setLibelle($data->libelle);
-                $type->setUpdatedBy($this->userRepository->find($data->userUpdate));
+                $type->setLibelle($request->get('libelle'));
+                $type->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
                 $type->setUpdatedAt(new \DateTime());
                 $errorResponse = $this->errorResponse($type);
 
@@ -257,7 +257,7 @@ class ApiTypeController extends ApiInterface
         try {
             $data = json_decode($request->getContent());
 
-            foreach ($data->ids as $key => $value) {
+            foreach ($request->get('ids') as $key => $value) {
                 $type = $villeRepository->find($value['id']);
 
                 if ($type != null) {

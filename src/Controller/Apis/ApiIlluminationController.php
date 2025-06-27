@@ -171,8 +171,8 @@ class ApiIlluminationController extends ApiInterface
             $data = json_decode($request->getContent());
             if ($illumination != null) {
 
-                $illumination->setLibelle($data->libelle);
-                $illumination->setUpdatedBy($this->userRepository->find($data->userUpdate));
+                $illumination->setLibelle($request->get('libelle'));
+                $illumination->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
                 $illumination->setUpdatedAt(new \DateTime());
                 $errorResponse = $this->errorResponse($illumination);
 
@@ -257,7 +257,7 @@ class ApiIlluminationController extends ApiInterface
         try {
             $data = json_decode($request->getContent());
 
-            foreach ($data->ids as $key => $value) {
+            foreach ($request->get('ids') as $key => $value) {
                 $illumination = $villeRepository->find($value['id']);
 
                 if ($illumination != null) {

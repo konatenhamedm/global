@@ -172,9 +172,9 @@ class ApiCiviliteController extends ApiInterface
             $data = json_decode($request->getContent());
             if ($civilite != null) {
 
-                $civilite->setLibelle($data->libelle);
-                $civilite->setCode($data->code);
-                $civilite->setUpdatedBy($this->userRepository->find($data->userUpdate));
+                $civilite->setLibelle($request->get('libelle'));
+                $civilite->setCode($request->get('code'));
+                $civilite->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
                 $civilite->setUpdatedAt(new \DateTime());
                 $errorResponse = $this->errorResponse($civilite);
 
@@ -259,7 +259,7 @@ class ApiCiviliteController extends ApiInterface
         try {
             $data = json_decode($request->getContent());
 
-            foreach ($data->ids as $key => $value) {
+            foreach ($request->get('ids') as $key => $value) {
                 $civilite = $villeRepository->find($value['id']);
 
                 if ($civilite != null) {
