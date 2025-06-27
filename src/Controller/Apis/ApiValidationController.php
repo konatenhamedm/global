@@ -214,7 +214,7 @@ class ApiValidationController extends ApiInterface
         ]
     )]
     #[OA\Tag(name: 'validation')]
-    public function validationAvecImpression(Request $request, AvecImpressionRepository $avecImpressionRepository): Response
+    public function validationAvecImpression(Request $request, AvecImpressionRepository $avecImpressionRepository,CommandeRepository $commandeRepository): Response
     {
 
         try {
@@ -223,6 +223,7 @@ class ApiValidationController extends ApiInterface
             $userId = $request->get('userUpdate');
 
             $avecImpression = $avecImpressionRepository->findOneBy(['commande' => $commandeId]);
+            $commandData = $avecImpression->getCommande();
             if (!$avecImpression) {
                 throw new \Exception('Commande non trouvée');
             }
@@ -290,6 +291,8 @@ class ApiValidationController extends ApiInterface
                 case 'etape_8':
                     $avecImpression->setDateFinalisation(new \DateTime($request->get('dateFinalisation')));
                     $avecImpression->setCommentaireFinalisation($request->get('commentaireFinalisation'));
+                    $commandData->setEtat('contrat_cloture');
+                    $commandeRepository->add($commandData, true);
                     break;
             }
 
@@ -366,10 +369,10 @@ class ApiValidationController extends ApiInterface
     {
         try {
             $commandeId = $request->get('commandeId');
-            $commandData = $commandeRepository->find($commandeId);
             $etape = $request->get('etape');
             $userUpdateId = $request->get('userUpdate');
             $sansImpression = $sansImpressionRepository->findOneBy(['commande' => $commandeId]);
+            $commandData = $sansImpression->getCommande();
 
             $filePrefix = str_slug('document_01');
             $filePath = $this->getUploadDir(self::UPLOAD_PATH, true);
@@ -417,8 +420,8 @@ class ApiValidationController extends ApiInterface
                 case 'etape_5':
                     $sansImpression->setDateFinalisation(new \DateTime($request->get('dateFinalisation')));
                     $sansImpression->setCommentaireFinalisation($request->get('commentaireFinalisation'));
-                    /* $commandData->setEtat('contrat_cloture');
-                    $commandeRepository->add($commandData, true); */
+                    $commandData->setEtat('contrat_cloture');
+                    $commandeRepository->add($commandData, true);
                     break;
             }
 
