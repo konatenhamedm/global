@@ -157,7 +157,7 @@ class ApiClientController extends ApiInterface
 
         $client = new Client();
 
-        $type = $typeClientRepository->find($data['type'])->getCode();
+        $type = $typeClientRepository->findOneBy(['code'=> $data['type']])->getCode();
 
         if($type == "individual"){
             $client->setTypeClient($typeClientRepository->find($data['type']));
