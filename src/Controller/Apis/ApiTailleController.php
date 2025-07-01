@@ -109,7 +109,6 @@ class ApiTailleController extends ApiInterface
             content: new OA\JsonContent(
                 properties: [
                     new OA\Property(property: "dimension", type: "string"),
-                    new OA\Property(property: "code", type: "string"),
                     new OA\Property(property: "userUpdate", type: "string"),
 
                 ],
@@ -153,7 +152,6 @@ class ApiTailleController extends ApiInterface
             content: new OA\JsonContent(
                 properties: [
                     new OA\Property(property: "dimension", type: "string"),
-                    new OA\Property(property: "code", type: "string"),
                     new OA\Property(property: "userUpdate", type: "string"),
 
                 ],
