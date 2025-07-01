@@ -44,7 +44,7 @@ class ApiTailleController extends ApiInterface
 
             $tailles = $tailleRepository->findAll();
 
-          
+
 
             $response =  $this->responseData($tailles, 'group1', ['Content-Type' => 'application/json']);
         } catch (\Exception $exception) {
@@ -67,7 +67,7 @@ class ApiTailleController extends ApiInterface
         content: new OA\JsonContent(
             type: 'array',
             items: new OA\Items(ref: new Model(type: Taille::class, groups: ['full']))
-            
+
         )
     )]
     #[OA\Parameter(
@@ -97,22 +97,22 @@ class ApiTailleController extends ApiInterface
     }
 
 
-    #[Route('/create',  methods: ['POST'])]
-    /**
-     * Permet de créer un(e) taille.
-     */
+    #[Route('/create', methods: ['POST'])]
     #[OA\Post(
         summary: "Authentification admin",
         description: "Génère un token JWT pour les administrateurs.",
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(
-                properties: [
-                    new OA\Property(property: "dimension", type: "string"),
-                    new OA\Property(property: "userUpdate", type: "string"),
-
-                ],
-                type: "object"
+            content: new OA\MediaType(
+                mediaType: "multipart/form-data",
+                schema: new OA\Schema(
+                    type: "object",
+                    required: ["dimension", "userUpdate"],
+                    properties: [
+                        new OA\Property(property: "dimension", type: "string"),
+                        new OA\Property(property: "userUpdate", type: "string"),
+                    ]
+                )
             )
         ),
         responses: [
@@ -145,17 +145,20 @@ class ApiTailleController extends ApiInterface
 
     #[Route('/update/{id}', methods: ['PUT', 'POST'])]
     #[OA\Post(
-        summary: "Creation de taille",
-        description: "Permet de créer un taille.",
+        summary: "Authentification admin",
+        description: "Génère un token JWT pour les administrateurs.",
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(
-                properties: [
-                    new OA\Property(property: "dimension", type: "string"),
-                    new OA\Property(property: "userUpdate", type: "string"),
-
-                ],
-                type: "object"
+            content: new OA\MediaType(
+                mediaType: "multipart/form-data",
+                schema: new OA\Schema(
+                    type: "object",
+                    required: ["dimension", "userUpdate"],
+                    properties: [
+                        new OA\Property(property: "dimension", type: "string"),
+                        new OA\Property(property: "userUpdate", type: "string"),
+                    ]
+                )
             )
         ),
         responses: [
@@ -208,7 +211,7 @@ class ApiTailleController extends ApiInterface
         content: new OA\JsonContent(
             type: 'array',
             items: new OA\Items(ref: new Model(type: Taille::class, groups: ['full']))
-           
+
         )
     )]
     #[OA\Tag(name: 'taille')]
@@ -246,7 +249,7 @@ class ApiTailleController extends ApiInterface
         content: new OA\JsonContent(
             type: 'array',
             items: new OA\Items(ref: new Model(type: Taille::class, groups: ['full']))
-          
+
         )
     )]
     #[OA\Tag(name: 'taille')]
