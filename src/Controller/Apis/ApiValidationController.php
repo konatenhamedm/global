@@ -49,7 +49,9 @@ class ApiValidationController extends ApiInterface
         description: "Génère un token JWT pour les administrateurs.",
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(
+            content: new OA\MediaType(
+                mediaType: "multipart/form-data",
+                schema: new OA\Schema(
                 properties: [
                     new OA\Property(property: "commentaire", type: "string"),
                     new OA\Property(property: "commandeId", type: "string"),
@@ -59,6 +61,7 @@ class ApiValidationController extends ApiInterface
 
                 ],
                 type: "object"
+            )
             )
         ),
         responses: [
@@ -162,7 +165,9 @@ class ApiValidationController extends ApiInterface
         description: "Génère un token JWT pour les administrateurs.",
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(
+            content: new OA\MediaType(
+                mediaType: "multipart/form-data",
+                schema: new OA\Schema(
                 properties: [
                     new OA\Property(property: "dateEnvoiVisuel", type: "date"),
                     new OA\Property(property: "commentaireEnvoiVisuel", type: "string"),
@@ -207,6 +212,7 @@ class ApiValidationController extends ApiInterface
 
                 ],
                 type: "object"
+            )
             )
         ),
         responses: [
@@ -318,7 +324,7 @@ class ApiValidationController extends ApiInterface
         }
     }
 
-    #[Route('/sans/impression', methods: ['GET'])]
+    #[Route('/sans/impression', methods: ['POST'])]
     /**
      * Retourne la liste des civilites.
      * 
@@ -326,7 +332,11 @@ class ApiValidationController extends ApiInterface
     #[OA\Response(
         response: 200,
         description: 'Retourne la liste des panneaux avec leurs faces.',
-        content: new OA\JsonContent(
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\MediaType(
+                mediaType: "multipart/form-data",
+                schema: new OA\Schema(
             properties: [
                 //ETAPE 1
                 new OA\Property(property: "dateEnvoiBache", type: "date"),
@@ -361,6 +371,8 @@ class ApiValidationController extends ApiInterface
 
             ],
             type: "object"
+        )
+        )
         )
     )]
     #[OA\Tag(name: 'validation')]

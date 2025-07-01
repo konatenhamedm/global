@@ -44,7 +44,7 @@ class ApiCiviliteController extends ApiInterface
 
             $civilites = $civiliteRepository->findAll();
 
-          
+
 
             $response =  $this->responseData($civilites, 'group1', ['Content-Type' => 'application/json']);
         } catch (\Exception $exception) {
@@ -67,7 +67,7 @@ class ApiCiviliteController extends ApiInterface
         content: new OA\JsonContent(
             type: 'array',
             items: new OA\Items(ref: new Model(type: Civilite::class, groups: ['full']))
-            
+
         )
     )]
     #[OA\Parameter(
@@ -97,23 +97,23 @@ class ApiCiviliteController extends ApiInterface
     }
 
 
-    #[Route('/create',  methods: ['POST'])]
-    /**
-     * Permet de créer un(e) civilite.
-     */
+    #[Route('/create', methods: ['POST'])]
     #[OA\Post(
-        summary: "Authentification admin",
-        description: "Génère un token JWT pour les administrateurs.",
+        summary: "Création de civilité",
+        description: "Permet de créer une civilité.",
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(
-                properties: [
-                    new OA\Property(property: "libelle", type: "string"),
-                    new OA\Property(property: "code", type: "string"),
-                    new OA\Property(property: "userUpdate", type: "string"),
-
-                ],
-                type: "object"
+            content: new OA\MediaType(
+                mediaType: "multipart/form-data",
+                schema: new OA\Schema(
+                    type: "object",
+                    required: ["libelle", "code", "userUpdate"],
+                    properties: [
+                        new OA\Property(property: "libelle", type: "string"),
+                        new OA\Property(property: "code", type: "string"),
+                        new OA\Property(property: "userUpdate", type: "string"),
+                    ]
+                )
             )
         ),
         responses: [
@@ -123,42 +123,47 @@ class ApiCiviliteController extends ApiInterface
     #[OA\Tag(name: 'civilite')]
     public function create(Request $request, CiviliteRepository $civiliteRepository): Response
     {
+        $libelle = $request->request->get('libelle');
+        $code = $request->request->get('code');
+        $userUpdate = $request->request->get('userUpdate');
 
-        $data = json_decode($request->getContent(), true);
         $civilite = new Civilite();
-        $civilite->setLibelle($request->get('libelle'));
-        $civilite->setCode($request->get('code'));
-        $civilite->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
-        $civilite->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
-        $civilite->setCreatedAtValue(new DateTime());
-        $civilite->setUpdatedAt(new DateTime());
+        $civilite->setLibelle($libelle);
+        $civilite->setCode($code);
+        $civilite->setCreatedBy($this->userRepository->find($userUpdate));
+        $civilite->setUpdatedBy($this->userRepository->find($userUpdate));
+        $civilite->setCreatedAtValue(new \DateTime());
+        $civilite->setUpdatedAt(new \DateTime());
 
         $errorResponse = $this->errorResponse($civilite);
         if ($errorResponse !== null) {
-            return $errorResponse; // Retourne la réponse d'erreur si des erreurs sont présentes
-        } else {
-
-            $civiliteRepository->add($civilite, true);
+            return $errorResponse;
         }
+
+        $civiliteRepository->add($civilite, true);
 
         return $this->responseData($civilite, 'group1', ['Content-Type' => 'application/json']);
     }
 
 
+
     #[Route('/update/{id}', methods: ['PUT', 'POST'])]
     #[OA\Post(
-        summary: "Creation de civilite",
-        description: "Permet de créer un civilite.",
+        summary: "Mise à jour de civilité",
+        description: "Permet de mettre à jour une civilité.",
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(
-                properties: [
-                    new OA\Property(property: "libelle", type: "string"),
-                    new OA\Property(property: "code", type: "string"),
-                    new OA\Property(property: "userUpdate", type: "string"),
-
-                ],
-                type: "object"
+            content: new OA\MediaType(
+                mediaType: "multipart/form-data",
+                schema: new OA\Schema(
+                    type: "object",
+                    required: ["libelle", "code", "userUpdate"],
+                    properties: [
+                        new OA\Property(property: "libelle", type: "string"),
+                        new OA\Property(property: "code", type: "string"),
+                        new OA\Property(property: "userUpdate", type: "string"),
+                    ]
+                )
             )
         ),
         responses: [
@@ -169,36 +174,34 @@ class ApiCiviliteController extends ApiInterface
     public function update(Request $request, Civilite $civilite, CiviliteRepository $civiliteRepository): Response
     {
         try {
-            $data = json_decode($request->getContent());
-            if ($civilite != null) {
+            $libelle = $request->request->get('libelle');
+            $code = $request->request->get('code');
+            $userUpdate = $request->request->get('userUpdate');
 
-                $civilite->setLibelle($request->get('libelle'));
-                $civilite->setCode($request->get('code'));
-                $civilite->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
+            if ($civilite !== null) {
+                $civilite->setLibelle($libelle);
+                $civilite->setCode($code);
+                $civilite->setUpdatedBy($this->userRepository->find($userUpdate));
                 $civilite->setUpdatedAt(new \DateTime());
-                $errorResponse = $this->errorResponse($civilite);
 
+                $errorResponse = $this->errorResponse($civilite);
                 if ($errorResponse !== null) {
-                    return $errorResponse; // Retourne la réponse d'erreur si des erreurs sont présentes
-                } else {
-                    $civiliteRepository->add($civilite, true);
+                    return $errorResponse;
                 }
 
-
-
-                // On retourne la confirmation
-                $response = $this->responseData($civilite, 'group1', ['Content-Type' => 'application/json']);
+                $civiliteRepository->add($civilite, true);
+                return $this->responseData($civilite, 'group1', ['Content-Type' => 'application/json']);
             } else {
-                $this->setMessage("Cette ressource est inexsitante");
+                $this->setMessage("Cette ressource est inexistante");
                 $this->setStatusCode(300);
-                $response = $this->response('[]');
+                return $this->response('[]');
             }
         } catch (\Exception $exception) {
             $this->setMessage("");
-            $response = $this->response('[]');
+            return $this->response('[]');
         }
-        return $response;
     }
+
 
     //const TAB_ID = 'parametre-tabs';
 
@@ -212,7 +215,7 @@ class ApiCiviliteController extends ApiInterface
         content: new OA\JsonContent(
             type: 'array',
             items: new OA\Items(ref: new Model(type: Civilite::class, groups: ['full']))
-           
+
         )
     )]
     #[OA\Tag(name: 'civilite')]
@@ -250,7 +253,7 @@ class ApiCiviliteController extends ApiInterface
         content: new OA\JsonContent(
             type: 'array',
             items: new OA\Items(ref: new Model(type: Civilite::class, groups: ['full']))
-          
+
         )
     )]
     #[OA\Tag(name: 'civilite')]

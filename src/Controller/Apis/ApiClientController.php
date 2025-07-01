@@ -118,7 +118,9 @@ class ApiClientController extends ApiInterface
         description: "Génère un token JWT pour les clientistrateurs.",
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(
+            content: new OA\MediaType(
+                mediaType: "multipart/form-data",
+                schema: new OA\Schema(
                 properties: [
                     new OA\Property(property: "userId", type: "string"),
                     new OA\Property(property: "type", type: "string"),
@@ -140,6 +142,7 @@ class ApiClientController extends ApiInterface
 
                 ],
                 type: "object"
+            )
             )
         ),
         responses: [
@@ -209,7 +212,10 @@ class ApiClientController extends ApiInterface
         description: "Permet de créer un client.",
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(
+            content: new OA\MediaType(
+                mediaType: "multipart/form-data",
+                schema: new OA\Schema(
+                    type: "object",
                 properties: [
                     new OA\Property(property: "type", type: "string"),
                     new OA\Property(property: "nom", type: "string"),
@@ -229,7 +235,8 @@ class ApiClientController extends ApiInterface
                     new OA\Property(property: "userUpdate", type: "string"),
 
                 ],
-                type: "object"
+             
+            )
             )
         ),
         responses: [

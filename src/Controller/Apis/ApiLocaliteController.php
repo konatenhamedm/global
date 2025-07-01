@@ -106,7 +106,9 @@ class ApiLocaliteController extends ApiInterface
         description: "Génère un token JWT pour les administrateurs.",
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(
+            content: new OA\MediaType(
+                mediaType: "multipart/form-data",
+                schema: new OA\Schema(
                 properties: [
                     new OA\Property(property: "libelle", type: "string"),
                     //new OA\Property(property: "code", type: "string"),
@@ -114,6 +116,7 @@ class ApiLocaliteController extends ApiInterface
 
                 ],
                 type: "object"
+            )
             )
         ),
         responses: [
@@ -150,7 +153,9 @@ class ApiLocaliteController extends ApiInterface
         description: "Permet de créer un localite.",
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(
+            content: new OA\MediaType(
+                mediaType: "multipart/form-data",
+                schema: new OA\Schema(
                 properties: [
                     new OA\Property(property: "libelle", type: "string"),
                     //new OA\Property(property: "code", type: "string"),
@@ -158,6 +163,7 @@ class ApiLocaliteController extends ApiInterface
 
                 ],
                 type: "object"
+            )
             )
         ),
         responses: [

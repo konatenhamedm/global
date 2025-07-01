@@ -148,7 +148,9 @@ class ApiCommandeController extends ApiInterface
         description: "Génère un token JWT pour les administrateurs.",
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(
+            content: new OA\MediaType(
+                mediaType: "multipart/form-data",
+                schema: new OA\Schema(
                 properties: [
                     new OA\Property(property: "libelle", type: "string"),
                     new OA\Property(property: "client", type: "string"),
@@ -170,6 +172,7 @@ class ApiCommandeController extends ApiInterface
 
                 ],
                 type: "object"
+            )
             )
         ),
         responses: [
