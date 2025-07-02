@@ -40,12 +40,12 @@ class Taille
         return $this->id;
     }
 
-    public function getDimenssions(): ?string
+    public function getDimension(): ?string
     {
         return $this->dimension;
     }
 
-    public function setDimenssions(string $dimension): static
+    public function setDimension(string $dimension): static
     {
         $this->dimension = $dimension;
 
