@@ -125,7 +125,7 @@ class ApiTailleController extends ApiInterface
 
         $data = json_decode($request->getContent(), true);
         $taille = new Taille();
-        $taille->setDimenssions($request->get('dimension'));
+        $taille->setDimension($request->get('dimension'));
         $taille->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
         $taille->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
         $taille->setCreatedAtValue(new DateTime());
@@ -172,7 +172,7 @@ class ApiTailleController extends ApiInterface
             $data = json_decode($request->getContent());
             if ($taille != null) {
 
-                $taille->setDimenssions($request->get('dimension'));
+                $taille->setDimension($request->get('dimension'));
                 $taille->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
                 $taille->setUpdatedAt(new \DateTime());
                 $errorResponse = $this->errorResponse($taille);
