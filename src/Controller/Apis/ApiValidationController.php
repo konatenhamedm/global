@@ -329,9 +329,9 @@ class ApiValidationController extends ApiInterface
      * Retourne la liste des civilites.
      * 
      */
-    #[OA\Response(
-        response: 200,
-        description: 'Retourne la liste des panneaux avec leurs faces.',
+    #[OA\Post(
+        summary: "Authentification admin",
+        description: "Génère un token JWT pour les administrateurs.",
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\MediaType(
