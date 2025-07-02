@@ -40,7 +40,7 @@ class ApiValidationController extends ApiInterface
 {
 
 
-    #[Route('/commande', methods: ['GET'])]
+    #[Route('/commande', methods: ['POST'])]
     /**
      * Permet de valider un(e) commande.
      */
