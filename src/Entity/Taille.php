@@ -22,7 +22,7 @@ class Taille
 
     #[ORM\Column(length: 255)]
     #[Group(["group1"])]
-    private ?string $dimenssions = null;
+    private ?string $dimension = null;
 
     /**
      * @var Collection<int, Panneau>
@@ -42,12 +42,12 @@ class Taille
 
     public function getDimenssions(): ?string
     {
-        return $this->dimenssions;
+        return $this->dimension;
     }
 
-    public function setDimenssions(string $dimenssions): static
+    public function setDimenssions(string $dimension): static
     {
-        $this->dimenssions = $dimenssions;
+        $this->dimension = $dimension;
 
         return $this;
     }
