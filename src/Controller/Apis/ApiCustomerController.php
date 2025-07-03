@@ -75,7 +75,7 @@ class ApiCustomerController extends ApiInterface
             foreach ($tailleRepository->findAll() as $key => $taille) {
                 $tailles[] = [
                     'id' => $taille->getId(),
-                    'libelle' => $taille->getDimenssions(),
+                    'libelle' => $taille->getDimension(),
                 ];
             }
 

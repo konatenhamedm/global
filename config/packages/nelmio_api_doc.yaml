@@ -1,9 +1,9 @@
 nelmio_api_doc:
     documentation:
         servers:
-          - url: http://global.kiffelesport.com/
+          - url: http://localhost:8000/
             description: API over HTTP
-          - url: http://global.kiffelesport.com/
+          - url: http://localhost:8000/
             description: API over HTTPS
         info:
             title: GLOBAL 
