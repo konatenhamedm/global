@@ -90,14 +90,14 @@ class ApiCustomerController extends ApiInterface
                 $substrats[] = [
                     'id' => $substrat->getId(),
                     'libelle' => $substrat->getLibelle(),
-                    'code' => $substrat->getCode(),
+                   /*  'code' => $substrat->getCode(), */
                 ];
             }
             foreach ($specificationRepository->findAll() as $key => $specification) {
                 $specifications[] = [
                     'id' => $specification->getId(),
                     'libelle' => $specification->getLibelle(),
-                    'code' => $specification->getCode(),
+                    /* 'code' => $specification->getCode(), */
                 ];
             }
             foreach ($typeRepository->findAll() as $key => $type) {
