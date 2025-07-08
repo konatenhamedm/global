@@ -156,6 +156,8 @@ class ApiCommandeController extends ApiInterface
                     new OA\Property(property: "client", type: "string"),
                     new OA\Property(property: "impressionVisuelle", type: "boolean"),
                     new OA\Property(property: "montant", type: "string"),
+                    new OA\Property(property: "dateDebut", type: "string"),
+                    new OA\Property(property: "dateFin", type: "string"),
                     new OA\Property(
                         property: "lignes",
                         type: "array",
@@ -163,8 +165,8 @@ class ApiCommandeController extends ApiInterface
                             type: "object",
                             properties: [
                                 new OA\Property(property: "face", type: "string"),
-                                new OA\Property(property: "dateDebut", type: "string"),
-                                new OA\Property(property: "dateFin", type: "string"),
+                                
+                                
                             ]
                         ),
                     ),
