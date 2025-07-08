@@ -315,8 +315,8 @@ class ApiPanneauController extends ApiInterface
 
          
                 $panneau->setCode($request->get('code'));
-                $panneau->setGpsLat($request->get('gpsLat'));
-                $panneau->setGpsLong($request->get('gpsLong'));
+                $panneau->setGpsLat($request->get('gpslat'));
+                $panneau->setGpsLong($request->get('gpslong'));
                 $panneau->setType($typeRepository->find($request->get('type')));
                 $panneau->setIllumination($illuminationRepository->find($request->get('illumination')));
                 $panneau->setSousType($sousTypeRepository->find($request->get('soustype')));
