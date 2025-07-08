@@ -67,7 +67,7 @@ class Panneau
     /**
      * @var Collection<int, Face>
      */
-    #[ORM\OneToMany(targetEntity: Face::class, mappedBy: 'panneau')]
+    #[ORM\OneToMany(targetEntity: Face::class, mappedBy: 'panneau', orphanRemoval: true, cascade: ['persist'])]
     #[Group(["group1"])]
     private Collection $faces;
 

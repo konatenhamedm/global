@@ -19,6 +19,7 @@ use App\Repository\SuperficieRepository;
 use App\Repository\TailleRepository;
 use App\Repository\TypeRepository;
 use App\Repository\UserRepository;
+use App\Service\Utils;
 use DateTime;
 use Doctrine\DBAL\Types\TypeRegistry;
 use Symfony\Component\HttpFoundation\Response;
@@ -56,7 +57,7 @@ class ApiPanneauController extends ApiInterface
 
             $panneaus = $panneauRepository->findAll();
 
-          
+
 
             $response =  $this->responseData($panneaus, 'group1', ['Content-Type' => 'application/json']);
         } catch (\Exception $exception) {
@@ -79,7 +80,7 @@ class ApiPanneauController extends ApiInterface
         content: new OA\JsonContent(
             type: 'array',
             items: new OA\Items(ref: new Model(type: Panneau::class, groups: ['full']))
-            
+
         )
     )]
     #[OA\Parameter(
@@ -121,39 +122,39 @@ class ApiPanneauController extends ApiInterface
             content: new OA\MediaType(
                 mediaType: "multipart/form-data",
                 schema: new OA\Schema(
-                properties: [
-                    new OA\Property(property: "gpslat", type: "string"),
-                    new OA\Property(property: "gpslong", type: "string"),
-                    new OA\Property(property: "type", type: "string"),
-                    new OA\Property(property: "illumination", type: "string"),
-                    new OA\Property(property: "soustype", type: "string"),
-                    new OA\Property(property: "substrat", type: "string"),
-                    new OA\Property(property: "localite", type: "string"),
-                    new OA\Property(property: "taille", type: "string"),
-                    new OA\Property(property: "superficie", type: "string"),
-                    new OA\Property(property: "orientation", type: "string"),
-                    new OA\Property(property: "code", type: "string"),
-                    new OA\Property(property: "userUpdate", type: "string"),
+                    properties: [
+                        new OA\Property(property: "gpslat", type: "string"),
+                        new OA\Property(property: "gpslong", type: "string"),
+                        new OA\Property(property: "type", type: "string"),
+                        new OA\Property(property: "illumination", type: "string"),
+                        new OA\Property(property: "soustype", type: "string"),
+                        new OA\Property(property: "substrat", type: "string"),
+                        new OA\Property(property: "localite", type: "string"),
+                        new OA\Property(property: "taille", type: "string"),
+                        new OA\Property(property: "superficie", type: "string"),
+                        new OA\Property(property: "orientation", type: "string"),
+                        new OA\Property(property: "code", type: "string"),
+                        new OA\Property(property: "userUpdate", type: "string"),
 
-                    new OA\Property(
-                        property: "lignes",
-                        type: "array",
-                        items: new OA\Items(
-                            type: "object",
-                            properties: [
-                                new OA\Property(property: "imagePrincipale", type: "string", format: "binary"), //photo
-                                new OA\Property(property: "imageSecondaire1", type: "string", format: "binary"), //photo
-                                new OA\Property(property: "imageSecondaire2", type: "string", format: "binary"), //photo
-                                new OA\Property(property: "imageSecondaire3", type: "string", format: "binary"), //photo
-                                new OA\Property(property: "prix", type: "string"),
-                                new OA\Property(property: "numFace", type: "string"),
-                                new OA\Property(property: "code", type: "string"),
-                            ]
+                        new OA\Property(
+                            property: "lignes",
+                            type: "array",
+                            items: new OA\Items(
+                                type: "object",
+                                properties: [
+                                    new OA\Property(property: "imagePrincipale", type: "string", format: "binary"), //photo
+                                    new OA\Property(property: "imageSecondaire1", type: "string", format: "binary"), //photo
+                                    new OA\Property(property: "imageSecondaire2", type: "string", format: "binary"), //photo
+                                    new OA\Property(property: "imageSecondaire3", type: "string", format: "binary"), //photo
+                                    new OA\Property(property: "prix", type: "string"),
+                                    new OA\Property(property: "numFace", type: "string"),
+                                    new OA\Property(property: "code", type: "string"),
+                                ]
+                            ),
                         ),
-                    ),
-                ],
-                type: "object"
-            )
+                    ],
+                    type: "object"
+                )
             )
         ),
         responses: [
@@ -161,26 +162,29 @@ class ApiPanneauController extends ApiInterface
         ]
     )]
     #[OA\Tag(name: 'panneau')]
-    public function create(Request $request,
-     PanneauRepository $panneauRepository,
-     TypeRepository $typeRepository,
-     IlluminationRepository $illuminationRepository,
-     SousTypeRepository $sousTypeRepository,
-     SubstratRepository $substratRepository,
-     LocaliteRepository $localiteRepository,
-     TailleRepository $tailleRepository,
-     SuperficieRepository $superficieRepository,
-     OrientationRepository $orientationRepository,
-        UserRepository $userRepository
-     ): Response
-    {
+    public function create(
+        Request $request,
+        PanneauRepository $panneauRepository,
+        TypeRepository $typeRepository,
+        IlluminationRepository $illuminationRepository,
+        SousTypeRepository $sousTypeRepository,
+        SubstratRepository $substratRepository,
+        LocaliteRepository $localiteRepository,
+        TailleRepository $tailleRepository,
+        SuperficieRepository $superficieRepository,
+        OrientationRepository $orientationRepository,
+        UserRepository $userRepository,
+        Utils $utils,
+    ): Response {
 
         $names = 'document_' . '01';
         $filePrefix  = str_slug($names);
         $filePath = $this->getUploadDir(self::UPLOAD_PATH, true);
+        // dd($filePath);
 
 
         $data = json_decode($request->getContent(), true);
+
         $panneau = new Panneau();
         $panneau->setGpsLat($request->get('gpslat'));
         $panneau->setGpsLong($request->get('gpslong'));
@@ -199,56 +203,51 @@ class ApiPanneauController extends ApiInterface
         $panneau->setUpdatedAt(new DateTime());
 
 
-        $faces = $$request->get('faces');
+        $facesData = $request->get('lignes');
 
-        foreach ($faces as $face) {
-            //$face = $faceRepository->find($ligneData['face']);
+       
+        $uploadedFiles = $request->files->get('lignes');
 
-            $face = new Face();
-            $face->setNumFace($face['numFace']);
-            $face->setCode($face['code']);
-            $face->setPrix($face['prix']);
+        foreach ($facesData as $index => $faceData) {
+           
+            $newFace = new Face();
+            $newFace
+                ->setNumFace($faceData['numFace'])
+                ->setCode($faceData['code'])
+                ->setPrix($faceData['prix']);
 
+            // 4. Traiter les fichiers (s'ils existent pour cette indexation)
+            if (isset($uploadedFiles[$index])) {
+                $fileKeys = [
+                    'imagePrincipale',
+                    'imageSecondaire1',
+                    'imageSecondaire2',
+                    'imageSecondaire3',
+                ];
 
-            $image1 = $request->files->get('imagePrincipale');
-            $image2 = $request->files->get('imageSecondaire1');
-            $image3 = $request->files->get('imageSecondaire2');
-            $image4 = $request->files->get('imageSecondaire3');
-
-
-            if ($image1) {
-                $fichier = $this->utils->sauvegardeFichier($filePath, $filePrefix, $image1, self::UPLOAD_PATH);
-                if ($fichier) {
-                    $face->setImagePrincipale($fichier);
-                }
-            }
-            if ($image2) {
-                $fichier = $this->utils->sauvegardeFichier($filePath, $filePrefix, $image2, self::UPLOAD_PATH);
-                if ($fichier) {
-                    $face->setImageSecondaire1($fichier);
-                }
-            }
-            if ($image3) {
-                $fichier = $this->utils->sauvegardeFichier($filePath, $filePrefix, $image3, self::UPLOAD_PATH);
-                if ($fichier) {
-                    $face->setImageSecondaire2($fichier);
-                }
-            }
-            if ($image4) {
-                $fichier = $this->utils->sauvegardeFichier($filePath, $filePrefix, $image4, self::UPLOAD_PATH);
-                if ($fichier) {
-                    $face->setImageSecondaire3($fichier);
+                foreach ($fileKeys as $key) {
+                    if (!empty($uploadedFiles[$index][$key])) {
+                        $uploadedFile = $uploadedFiles[$index][$key];
+                        $fichier = $utils->sauvegardeFichier($filePath, $filePrefix, $uploadedFile, self::UPLOAD_PATH);
+                        if ($fichier) {
+                            $setter = 'set' . ucfirst($key);
+                            $newFace->$setter($fichier);
+                        }
+                    }
                 }
             }
 
-            $face->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
-            $face->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
-            $face->setCreatedAtValue(new DateTime());
-            $face->setUpdatedAt(new DateTime());
+            // 5. Gérer les métadonnées (user, dates)
+            $user = $this->userRepository->find($request->get('userUpdate'));
             
-            $panneau->addFace($face);
-        }
+            $newFace->setCreatedBy($user);
+            $newFace->setUpdatedBy($user);
+            $newFace->setCreatedAtValue(new \DateTime());
+            $newFace->setUpdatedAt(new \DateTime());
 
+            // 6. Lier la Face au Panneau
+            $panneau->addFace($newFace);
+        }
 
 
         $errorResponse = $this->errorResponse($panneau);
@@ -272,23 +271,23 @@ class ApiPanneauController extends ApiInterface
             content: new OA\MediaType(
                 mediaType: "multipart/form-data",
                 schema: new OA\Schema(
-                properties: [
-                    new OA\Property(property: "gpslat", type: "string"),
-                    new OA\Property(property: "gpslong", type: "string"),
-                    new OA\Property(property: "type", type: "string"),
-                    new OA\Property(property: "illumination", type: "string"),
-                    new OA\Property(property: "soustype", type: "string"),
-                    new OA\Property(property: "substrat", type: "string"),
-                    new OA\Property(property: "localite", type: "string"),
-                    new OA\Property(property: "taille", type: "string"),
-                    new OA\Property(property: "superficie", type: "string"),
-                    new OA\Property(property: "orientation", type: "string"),
-                    new OA\Property(property: "code", type: "string"),
-                    new OA\Property(property: "userUpdate", type: "string"),
+                    properties: [
+                        new OA\Property(property: "gpslat", type: "string"),
+                        new OA\Property(property: "gpslong", type: "string"),
+                        new OA\Property(property: "type", type: "string"),
+                        new OA\Property(property: "illumination", type: "string"),
+                        new OA\Property(property: "soustype", type: "string"),
+                        new OA\Property(property: "substrat", type: "string"),
+                        new OA\Property(property: "localite", type: "string"),
+                        new OA\Property(property: "taille", type: "string"),
+                        new OA\Property(property: "superficie", type: "string"),
+                        new OA\Property(property: "orientation", type: "string"),
+                        new OA\Property(property: "code", type: "string"),
+                        new OA\Property(property: "userUpdate", type: "string"),
 
-                ],
-                type: "object"
-            )
+                    ],
+                    type: "object"
+                )
             )
         ),
         responses: [
@@ -296,24 +295,25 @@ class ApiPanneauController extends ApiInterface
         ]
     )]
     #[OA\Tag(name: 'panneau')]
-    public function update(Request $request, Panneau $panneau, 
-    PanneauRepository $panneauRepository,
-    TypeRepository $typeRepository,
-     IlluminationRepository $illuminationRepository,
-     SousTypeRepository $sousTypeRepository,
-     SubstratRepository $substratRepository,
-     LocaliteRepository $localiteRepository,
-     TailleRepository $tailleRepository,
-     SuperficieRepository $superficieRepository,
-     OrientationRepository $orientationRepository,
+    public function update(
+        Request $request,
+        Panneau $panneau,
+        PanneauRepository $panneauRepository,
+        TypeRepository $typeRepository,
+        IlluminationRepository $illuminationRepository,
+        SousTypeRepository $sousTypeRepository,
+        SubstratRepository $substratRepository,
+        LocaliteRepository $localiteRepository,
+        TailleRepository $tailleRepository,
+        SuperficieRepository $superficieRepository,
+        OrientationRepository $orientationRepository,
         UserRepository $userRepository
-    ): Response
-    {
+    ): Response {
         try {
             $data = json_decode($request->getContent());
             if ($panneau != null) {
 
-         
+
                 $panneau->setCode($request->get('code'));
                 $panneau->setGpsLat($request->get('gpslat'));
                 $panneau->setGpsLong($request->get('gpslong'));
@@ -325,7 +325,7 @@ class ApiPanneauController extends ApiInterface
                 $panneau->setTaille($tailleRepository->find($request->get('taille')));
                 $panneau->setSuperficie($superficieRepository->find($request->get('superficie')));
                 $panneau->setOrientation($orientationRepository->find($request->get('orientation')));
-                
+
                 $panneau->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
                 $panneau->setUpdatedAt(new \DateTime());
                 $errorResponse = $this->errorResponse($panneau);
@@ -364,7 +364,7 @@ class ApiPanneauController extends ApiInterface
         content: new OA\JsonContent(
             type: 'array',
             items: new OA\Items(ref: new Model(type: Panneau::class, groups: ['full']))
-           
+
         )
     )]
     #[OA\Tag(name: 'panneau')]
@@ -402,7 +402,7 @@ class ApiPanneauController extends ApiInterface
         content: new OA\JsonContent(
             type: 'array',
             items: new OA\Items(ref: new Model(type: Panneau::class, groups: ['full']))
-          
+
         )
     )]
     #[OA\Tag(name: 'panneau')]
