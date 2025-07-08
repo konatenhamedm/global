@@ -250,6 +250,10 @@ class ApiPanneauController extends ApiInterface
                 // 6. Lier la Face au Panneau
                 $panneau->addFace($newFace);
             }
+
+
+
+            
     
     
             $errorResponse = $this->errorResponse($panneau);
