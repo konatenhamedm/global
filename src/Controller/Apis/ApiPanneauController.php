@@ -27,6 +27,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use OpenApi\Attributes as OA;
 use Nelmio\ApiDocBundle\Attribute\Model;
 use Nelmio\ApiDocBundle\Annotation\Security;
+use PhpParser\Node\Stmt\TryCatch;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
@@ -177,85 +178,89 @@ class ApiPanneauController extends ApiInterface
         Utils $utils,
     ): Response {
 
-        $names = 'document_' . '01';
-        $filePrefix  = str_slug($names);
-        $filePath = $this->getUploadDir(self::UPLOAD_PATH, true);
-        // dd($filePath);
-
-
-        $data = json_decode($request->getContent(), true);
-
-        $panneau = new Panneau();
-        $panneau->setGpsLat($request->get('gpslat'));
-        $panneau->setGpsLong($request->get('gpslong'));
-        $panneau->setType($typeRepository->find($request->get('type')));
-        $panneau->setIllumination($illuminationRepository->find($request->get('illumination')));
-        $panneau->setSousType($sousTypeRepository->find($request->get('soustype')));
-        $panneau->setSubstrat($substratRepository->find($request->get('substrat')));
-        $panneau->setLocalite($localiteRepository->find($request->get('localite')));
-        $panneau->setTaille($tailleRepository->find($request->get('taille')));
-        $panneau->setSuperficie($superficieRepository->find($request->get('superficie')));
-        $panneau->setOrientation($orientationRepository->find($request->get('orientation')));
-        $panneau->setCode($request->get('code'));
-        $panneau->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
-        $panneau->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
-        $panneau->setCreatedAtValue(new DateTime());
-        $panneau->setUpdatedAt(new DateTime());
-
-
-        $facesData = $request->get('lignes');
-
-       
-        $uploadedFiles = $request->files->get('lignes');
-
-        foreach ($facesData as $index => $faceData) {
+        try {
+            $names = 'document_' . '01';
+            $filePrefix  = str_slug($names);
+            $filePath = $this->getUploadDir(self::UPLOAD_PATH, true);
+            // dd($filePath);
+    
+    
+            $data = json_decode($request->getContent(), true);
+    
+            $panneau = new Panneau();
+            $panneau->setGpsLat($request->get('gpslat'));
+            $panneau->setGpsLong($request->get('gpslong'));
+            $panneau->setType($typeRepository->find($request->get('type')));
+            $panneau->setIllumination($illuminationRepository->find($request->get('illumination')));
+            $panneau->setSousType($sousTypeRepository->find($request->get('soustype')));
+            $panneau->setSubstrat($substratRepository->find($request->get('substrat')));
+            $panneau->setLocalite($localiteRepository->find($request->get('localite')));
+            $panneau->setTaille($tailleRepository->find($request->get('taille')));
+            $panneau->setSuperficie($superficieRepository->find($request->get('superficie')));
+            $panneau->setOrientation($orientationRepository->find($request->get('orientation')));
+            $panneau->setCode($request->get('code'));
+            $panneau->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
+            $panneau->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
+            $panneau->setCreatedAtValue(new DateTime());
+            $panneau->setUpdatedAt(new DateTime());
+    
+    
+            $facesData = $request->get('lignes');
+    
            
-            $newFace = new Face();
-            $newFace
-                ->setNumFace($faceData['numFace'])
-                ->setCode($faceData['code'])
-                ->setPrix($faceData['prix']);
-
-            // 4. Traiter les fichiers (s'ils existent pour cette indexation)
-            if (isset($uploadedFiles[$index])) {
-                $fileKeys = [
-                    'imagePrincipale',
-                    'imageSecondaire1',
-                    'imageSecondaire2',
-                    'imageSecondaire3',
-                ];
-
-                foreach ($fileKeys as $key) {
-                    if (!empty($uploadedFiles[$index][$key])) {
-                        $uploadedFile = $uploadedFiles[$index][$key];
-                        $fichier = $utils->sauvegardeFichier($filePath, $filePrefix, $uploadedFile, self::UPLOAD_PATH);
-                        if ($fichier) {
-                            $setter = 'set' . ucfirst($key);
-                            $newFace->$setter($fichier);
+            $uploadedFiles = $request->files->get('lignes');
+    
+            foreach ($facesData as $index => $faceData) {
+               
+                $newFace = new Face();
+                $newFace
+                    ->setNumFace($faceData['numFace'])
+                    ->setCode($faceData['code'])
+                    ->setPrix($faceData['prix']);
+    
+                // 4. Traiter les fichiers (s'ils existent pour cette indexation)
+                if (isset($uploadedFiles[$index])) {
+                    $fileKeys = [
+                        'imagePrincipale',
+                        'imageSecondaire1',
+                        'imageSecondaire2',
+                        'imageSecondaire3',
+                    ];
+    
+                    foreach ($fileKeys as $key) {
+                        if (!empty($uploadedFiles[$index][$key])) {
+                            $uploadedFile = $uploadedFiles[$index][$key];
+                            $fichier = $utils->sauvegardeFichier($filePath, $filePrefix, $uploadedFile, self::UPLOAD_PATH);
+                            if ($fichier) {
+                                $setter = 'set' . ucfirst($key);
+                                $newFace->$setter($fichier);
+                            }
                         }
                     }
                 }
+    
+                // 5. Gérer les métadonnées (user, dates)
+                $user = $this->userRepository->find($request->get('userUpdate'));
+                
+                $newFace->setCreatedBy($user);
+                $newFace->setUpdatedBy($user);
+                $newFace->setCreatedAtValue(new \DateTime());
+                $newFace->setUpdatedAt(new \DateTime());
+    
+                // 6. Lier la Face au Panneau
+                $panneau->addFace($newFace);
             }
-
-            // 5. Gérer les métadonnées (user, dates)
-            $user = $this->userRepository->find($request->get('userUpdate'));
-            
-            $newFace->setCreatedBy($user);
-            $newFace->setUpdatedBy($user);
-            $newFace->setCreatedAtValue(new \DateTime());
-            $newFace->setUpdatedAt(new \DateTime());
-
-            // 6. Lier la Face au Panneau
-            $panneau->addFace($newFace);
-        }
-
-
-        $errorResponse = $this->errorResponse($panneau);
-        if ($errorResponse !== null) {
-            return $errorResponse; // Retourne la réponse d'erreur si des erreurs sont présentes
-        } else {
-
-            $panneauRepository->add($panneau, true);
+    
+    
+            $errorResponse = $this->errorResponse($panneau);
+            if ($errorResponse !== null) {
+                return $errorResponse; // Retourne la réponse d'erreur si des erreurs sont présentes
+            } else {
+    
+                $panneauRepository->add($panneau, true);
+            }
+        } catch (\Throwable $th) {
+            return $this->response('[]', 500, ['Content-Type' => 'application/json']);
         }
 
         return $this->responseData($panneau, 'group1', ['Content-Type' => 'application/json']);
