@@ -28,6 +28,7 @@ use OpenApi\Attributes as OA;
 use Nelmio\ApiDocBundle\Attribute\Model;
 use Nelmio\ApiDocBundle\Annotation\Security;
 use PhpParser\Node\Stmt\TryCatch;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
@@ -183,10 +184,10 @@ class ApiPanneauController extends ApiInterface
             $filePrefix  = str_slug($names);
             $filePath = $this->getUploadDir(self::UPLOAD_PATH, true);
             // dd($filePath);
-    
-    
+
+
             $data = json_decode($request->getContent(), true);
-    
+
             $panneau = new Panneau();
             $panneau->setGpsLat($request->get('gpslat'));
             $panneau->setGpsLong($request->get('gpslong'));
@@ -203,71 +204,93 @@ class ApiPanneauController extends ApiInterface
             $panneau->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
             $panneau->setCreatedAtValue(new DateTime());
             $panneau->setUpdatedAt(new DateTime());
-    
-    
-            $facesData = $request->get('lignes');
-    
-           
-            $uploadedFiles = $request->files->get('lignes');
-    
+
+
+            $facesData = $request->get('lignes', []);
+            $uploadedFiles = $request->files->get('lignes', []);
+
             foreach ($facesData as $index => $faceData) {
-               
                 $newFace = new Face();
                 $newFace
-                    ->setNumFace($faceData['numFace'])
-                    ->setCode($faceData['code'])
-                    ->setPrix($faceData['prix']);
-    
-                // 4. Traiter les fichiers (s'ils existent pour cette indexation)
+                    ->setNumFace($faceData['numFace'] ?? '')
+                    ->setCode($faceData['code'] ?? '');
+
+                // 4. Upload des Fichiers (Optimisé)
                 if (isset($uploadedFiles[$index])) {
-                    $fileKeys = [
-                        'imagePrincipale',
-                        'imageSecondaire1',
-                        'imageSecondaire2',
-                        'imageSecondaire3',
-                    ];
-    
-                    foreach ($fileKeys as $key) {
-                        if (!empty($uploadedFiles[$index][$key])) {
-                            $uploadedFile = $uploadedFiles[$index][$key];
-                            $fichier = $utils->sauvegardeFichier($filePath, $filePrefix, $uploadedFile, self::UPLOAD_PATH);
-                            if ($fichier) {
-                                $setter = 'set' . ucfirst($key);
-                                $newFace->$setter($fichier);
-                            }
-                        }
-                    }
+                    $this->processUploadedFiles(
+                        $uploadedFiles[$index],
+                        $newFace,
+                        $utils,
+                        $filePath,
+                        $filePrefix
+                    );
                 }
-    
-                // 5. Gérer les métadonnées (user, dates)
-                $user = $this->userRepository->find($request->get('userUpdate'));
-                
-                $newFace->setCreatedBy($user);
-                $newFace->setUpdatedBy($user);
-                $newFace->setCreatedAtValue(new \DateTime());
-                $newFace->setUpdatedAt(new \DateTime());
-    
-                // 6. Lier la Face au Panneau
+
                 $panneau->addFace($newFace);
             }
 
 
 
-            
-    
-    
+
             $errorResponse = $this->errorResponse($panneau);
             if ($errorResponse !== null) {
                 return $errorResponse; // Retourne la réponse d'erreur si des erreurs sont présentes
             } else {
-    
+
                 $panneauRepository->add($panneau, true);
             }
         } catch (\Throwable $th) {
-            return $this->response('[]', 500, ['Content-Type' => 'application/json']);
+            // Log de l'erreur (ex: dans var/log/)
+            file_put_contents(
+                $this->getParameter('kernel.logs_dir') . '/upload_errors.log',
+                '[' . date('Y-m-d H:i:s') . '] ' . $th->getMessage() . PHP_EOL,
+                FILE_APPEND
+            );
+            return $this->json(['error' => 'Erreur lors du traitement'], 500);
         }
 
         return $this->responseData($panneau, 'group1', ['Content-Type' => 'application/json']);
+    }
+
+
+    private function processUploadedFiles(
+        array $files,
+        Face $face,
+        Utils $utils,
+        string $filePath,
+        string $filePrefix
+    ): void {
+        $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+        $maxFileSize = 10 * 1024 * 1024; // 10 Mo
+
+        foreach ($files as $key => $uploadedFile) {
+            if (!$uploadedFile instanceof UploadedFile) {
+                continue;
+            }
+
+            // Validation du fichier
+            if (
+                !in_array($uploadedFile->getMimeType(), $allowedMimeTypes) ||
+                $uploadedFile->getSize() > $maxFileSize
+            ) {
+                continue; // ou throw une exception
+            }
+
+            // Upload sécurisé
+            $filename = $utils->sauvegardeFichier(
+                $filePath,
+                $filePrefix . '_' . uniqid(),
+                $uploadedFile,
+                self::UPLOAD_PATH
+            );
+
+            if ($filename) {
+                $setter = 'set' . ucfirst($key);
+                if (method_exists($face, $setter)) {
+                    $face->$setter($filename);
+                }
+            }
+        }
     }
 
 
