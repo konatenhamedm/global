@@ -71,6 +71,9 @@ class Panneau
     #[Group(["group1"])]
     private Collection $faces;
 
+    #[ORM\ManyToOne(inversedBy: 'panneaus')]
+    private ?Specification $specification = null;
+
     public function __construct()
     {
         $this->faces = new ArrayCollection();
@@ -239,6 +242,18 @@ class Panneau
                 $face->setPanneau(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getSpecification(): ?Specification
+    {
+        return $this->specification;
+    }
+
+    public function setSpecification(?Specification $specification): static
+    {
+        $this->specification = $specification;
 
         return $this;
     }

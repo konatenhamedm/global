@@ -14,6 +14,7 @@ use App\Repository\LocaliteRepository;
 use App\Repository\OrientationRepository;
 use App\Repository\PanneauRepository;
 use App\Repository\SousTypeRepository;
+use App\Repository\SpecificationRepository;
 use App\Repository\SubstratRepository;
 use App\Repository\SuperficieRepository;
 use App\Repository\TailleRepository;
@@ -128,6 +129,7 @@ class ApiPanneauController extends ApiInterface
                         new OA\Property(property: "gpslong", type: "string"),
                         new OA\Property(property: "type", type: "string"),
                         new OA\Property(property: "illumination", type: "string"),
+                        new OA\Property(property: "specifications", type: "string"),
                         new OA\Property(property: "soustype", type: "string"),
                         new OA\Property(property: "substrat", type: "string"),
                         new OA\Property(property: "localite", type: "string"),
@@ -175,6 +177,7 @@ class ApiPanneauController extends ApiInterface
         SuperficieRepository $superficieRepository,
         OrientationRepository $orientationRepository,
         UserRepository $userRepository,
+        SpecificationRepository $specificationRepository,
         Utils $utils,
     ): Response {
 
@@ -190,6 +193,7 @@ class ApiPanneauController extends ApiInterface
             $panneau = new Panneau();
             $panneau->setGpsLat($request->get('gpslat'));
             $panneau->setGpsLong($request->get('gpslong'));
+            $panneau->setSpecification($specificationRepository->find($request->get('specification')));
             $panneau->setType($typeRepository->find($request->get('type')));
             $panneau->setIllumination($illuminationRepository->find($request->get('illumination')));
             $panneau->setSousType($sousTypeRepository->find($request->get('soustype')));
@@ -284,6 +288,7 @@ class ApiPanneauController extends ApiInterface
                         new OA\Property(property: "gpslat", type: "string"),
                         new OA\Property(property: "gpslong", type: "string"),
                         new OA\Property(property: "type", type: "string"),
+                        new OA\Property(property: "specifications", type: "string"),
                         new OA\Property(property: "illumination", type: "string"),
                         new OA\Property(property: "soustype", type: "string"),
                         new OA\Property(property: "substrat", type: "string"),
@@ -316,6 +321,7 @@ class ApiPanneauController extends ApiInterface
         TailleRepository $tailleRepository,
         SuperficieRepository $superficieRepository,
         OrientationRepository $orientationRepository,
+        SpecificationRepository $specificationRepository,
         UserRepository $userRepository
     ): Response {
         try {
@@ -326,6 +332,7 @@ class ApiPanneauController extends ApiInterface
                 $panneau->setCode($request->get('code'));
                 $panneau->setGpsLat($request->get('gpslat'));
                 $panneau->setGpsLong($request->get('gpslong'));
+            $panneau->setSpecification($specificationRepository->find($request->get('specification')));
                 $panneau->setType($typeRepository->find($request->get('type')));
                 $panneau->setIllumination($illuminationRepository->find($request->get('illumination')));
                 $panneau->setSousType($sousTypeRepository->find($request->get('soustype')));
