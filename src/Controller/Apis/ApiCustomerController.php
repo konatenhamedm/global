@@ -11,6 +11,7 @@ use App\Entity\Panneau;
 use App\Repository\CiviliteRepository;
 use App\Repository\CommandeRepository;
 use App\Repository\IlluminationRepository;
+use App\Repository\LocaliteRepository;
 use App\Repository\OrientationRepository;
 use App\Repository\PanneauRepository;
 use App\Repository\SousTypeRepository;
@@ -59,7 +60,8 @@ class ApiCustomerController extends ApiInterface
         OrientationRepository $orientationRepository,
         SubstratRepository $substratRepository,
         SuperficieRepository $superficieRepository,
-        TypeRepository $typeRepository
+        TypeRepository $typeRepository,
+        LocaliteRepository $localiteRepository
 
     ): Response {
         try {
@@ -71,6 +73,7 @@ class ApiCustomerController extends ApiInterface
             $panneauSousTypes = [];
             $superficies = [];
             $orientations = [];
+            $localites = [];
 
             foreach ($tailleRepository->findAll() as $key => $taille) {
                 $tailles[] = [
@@ -128,6 +131,12 @@ class ApiCustomerController extends ApiInterface
                     'libelle' =>  $orientation->getLibelle()
                 ];
             }
+            foreach ($localiteRepository->findAll() as  $localite) {
+                $localites[] = [
+                    'id' =>  $localite->getId(),
+                    'libelle' =>  $localite->getLibelle()
+                ];
+            }
 
 
             $data = [
@@ -139,6 +148,7 @@ class ApiCustomerController extends ApiInterface
                 'panneauSousTypes' => $panneauSousTypes,
                 'superficies' => $superficies,
                 'orientations' => $orientations,
+                'localites' => $localites,
             ];
 
             $response = $this->responseData($data, 'group_pro', ['Content-Type' => 'application/json']);
