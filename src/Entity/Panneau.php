@@ -72,6 +72,7 @@ class Panneau
     private Collection $faces;
 
     #[ORM\ManyToOne(inversedBy: 'panneaus')]
+    #[Group(["group1","group_commande"])]
     private ?Specification $specification = null;
 
     public function __construct()
