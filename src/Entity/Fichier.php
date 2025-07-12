@@ -34,11 +34,11 @@ class Fichier implements \Serializable
     private ?int $size = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Group(["fichier", "groupe_batis",'group_user','group_pro',"group1"])]
+    #[Group(["fichier", "groupe_batis",'group_user','group_pro',"group1",'group_commande'])]
     private ?string $path = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Group(["fichier", "groupe_batis",'group_user','group_pro',"group1"])]
+    #[Group(["fichier", "groupe_batis",'group_user','group_pro',"group1",'group_commande'])]
     private ?string $alt = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]

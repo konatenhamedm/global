@@ -218,7 +218,10 @@ class ApiCommandeController extends ApiInterface
         
         $somme = 0;
         $lignes = $request->get('lignes');
+
+        //dd($lignes);
         foreach ($lignes as $ligneData) {
+
             $face = $faceRepository->findOneBy(['code' => $ligneData['face']]);
             $somme += $face->getPrix();
         
