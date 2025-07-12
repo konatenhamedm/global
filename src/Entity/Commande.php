@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\CommandeRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups as Group;
 
@@ -62,6 +63,7 @@ class Commande
      * @var Collection<int, Validation>
      */
     #[ORM\OneToMany(targetEntity: Validation::class, mappedBy: 'commande')]
+    #[Group(["group1","group_commande"])]
     private Collection $validations;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -72,13 +74,6 @@ class Commande
     #[Group(["group1","group_commande"])]
     private ?string $montantPose = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    #[Group(["group1","group_commande"])]
-    private ?string $montantDepose = null;
-
-    #[ORM\Column]
-    #[Group(["group1","group_commande"])]
-    private ?string $impressionVisuelle = null;
 
     /**
      * @var Collection<int, AvecImpression>
@@ -92,6 +87,20 @@ class Commande
     #[ORM\OneToMany(targetEntity: SansImpression::class, mappedBy: 'commande')]
     private Collection $sansImpressions;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Group(["group1","group_commande"])]
+    private ?string $montantProvisoire = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Group(["group1","group_commande"])]
+    private ?string $montantLocation = null;
+
+    #[ORM\ManyToOne(cascade: ["persist"], fetch: "EAGER")]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Group(["fichier", "group1",'group_commande'])]
+    private ?Fichier $fichierContrat = null;
+
+
     public function __construct()
     {
         $this->lignes = new ArrayCollection();
@@ -101,6 +110,7 @@ class Commande
         $this->sansImpressions = new ArrayCollection();
         $this->etat = "devis_attente";
         $this->dateCommande = new \DateTime();
+        
     }
 
     public function getId(): ?int
@@ -288,30 +298,7 @@ class Commande
         return $this;
     }
 
-    public function getMontantDepose(): ?string
-    {
-        return $this->montantDepose;
-    }
-
-    public function setMontantDepose(?string $montantDepose): static
-    {
-        $this->montantDepose = $montantDepose;
-
-        return $this;
-    }
-
-    public function getImpressionVisuelle(): ?string
-    {
-        return $this->impressionVisuelle;
-    }
-
-    public function setImpressionVisuelle(?string $impressionVisuelle): static
-    {
-        $this->impressionVisuelle = $impressionVisuelle;
-
-        return $this;
-    }
-
+   
     /**
      * @return Collection<int, AvecImpression>
      */
@@ -371,4 +358,44 @@ class Commande
 
         return $this;
     }
+
+    public function getMontantProvisoire(): ?string
+    {
+        return $this->montantProvisoire;
+    }
+
+    public function setMontantProvisoire(string $montantProvisoire): static
+    {
+        $this->montantProvisoire = $montantProvisoire;
+
+        return $this;
+    }
+
+    public function getMontantLocation(): ?string
+    {
+        return $this->montantLocation;
+    }
+
+    public function setMontantLocation(?string $montantLocation): static
+    {
+        $this->montantLocation = $montantLocation;
+
+        return $this;
+    }
+
+    public function getFichierContrat(): ?Fichier
+    {
+        return $this->fichierContrat;
+    }
+
+    public function setFichierContrat(Fichier $fichierContrat): static
+    {
+        $this->fichierContrat = $fichierContrat;
+
+        return $this;
+    }
+
+    
+
+  
 }

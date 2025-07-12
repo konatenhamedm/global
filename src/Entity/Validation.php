@@ -5,6 +5,8 @@ namespace App\Entity;
 use App\Repository\ValidationRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups as Group;
+
 
 #[ORM\Entity(repositoryClass: ValidationRepository::class)]
 class Validation
@@ -12,6 +14,7 @@ class Validation
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Group(["group1","group_commande"])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'validations')]
@@ -21,12 +24,16 @@ class Validation
     private ?string $etape = null;
 
     #[ORM\Column]
+    #[Group(["group1","group_commande"])]
+
     private ?\DateTime $dateValidation = null;
 
     #[ORM\ManyToOne(inversedBy: 'validations')]
+    #[Group(["group1","group_commande"])]
     private ?User $user = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Group(["group1","group_commande"])]
     private ?string $commentaire = null;
 
     public function getId(): ?int
