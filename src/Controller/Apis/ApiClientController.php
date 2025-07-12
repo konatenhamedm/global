@@ -35,9 +35,6 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 class ApiClientController extends ApiInterface
 {
 
-
-
-   
     #[Route('/', methods: ['GET'])]
     /**
      * Retourne la liste des clients.

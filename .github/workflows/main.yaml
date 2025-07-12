@@ -19,6 +19,5 @@ jobs:
       - name: deploy
         run: 
           sshpass -e ssh -o stricthostkeychecking=no ${{ secrets.APP_USER }}@${{ secrets.APP_HOST }}
-          "cd ../var/www/http://back.globaloutdoor.ci/web &&
-         git pull origin main_ufr
-         "  
+          "cd ../var/www/back.globaloutdoor.ci/web &&
+         git pull origin main         "  

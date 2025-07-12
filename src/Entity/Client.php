@@ -59,6 +59,7 @@ class Client extends Personne
     private ?string $localisation = null;
 
     #[ORM\ManyToOne(inversedBy: 'clients')]
+    #[Group(["group1"])]
     private ?TypeClient $typeClient = null;
 
     /**
