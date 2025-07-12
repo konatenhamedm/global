@@ -19,14 +19,13 @@ use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationSuccessEvent;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 
-class AuthenticationSuccessListener 
+class AuthenticationSuccessListener
 {
-   private $userRepository;
-   private $professionnelRepo;
+    private $userRepository;
+    private $professionnelRepo;
     public function __construct(UserRepository $userRepository)
     {
         $this->userRepository = $userRepository;
-        
     }
 
     /**
@@ -38,23 +37,28 @@ class AuthenticationSuccessListener
         $user = $event->getUser();
 
         if ($user instanceof User) {
-            
-            
+
+
             $userData = $this->userRepository->find($user->getId());
-           
+
 
             $data['data'] =   [
                 'id' => $user->getId(),
                 'email' => $user->getEmail(),
+                'username' => (
+                    $userData->getTypeUser() == "ADMIN"
+                    ? $user->getEmail()
+                    : ($userData->getPersonne() ? $userData->getPersonne()->getNom() . ' ' . $userData->getPersonne()->getPrenoms() : null)
+                ),
+
                 'fonction' => $userData->getTypeUser() == "ADMIN" ? $userData->getPersonne()->getFonction()->getLibelle()  : null,
                 'client' => $userData->getTypeUser() == "ADMIN" ? null : ($userData->getPersonne() ? $userData->getPersonne()->getId() : null),
                 'typeUser' => $userData->getTypeUser(),
-                'typeUser'=> $userData->getTypeUser() == "ADMIN" ? "ADMIN" : "CLIENT",
-                   
+                'typeUser' => $userData->getTypeUser() == "ADMIN" ? "ADMIN" : "CLIENT",
+
             ];
-           
+
             $event->setData($data);
         }
-
     }
 }
