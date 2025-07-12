@@ -272,4 +272,74 @@ class ApiInterface extends AbstractController
         return null; // Pas d'erreurs, donc pas de réponse d'erreur
     }
 
+
+    public function respondBadRequest(array $errors, string $customMessage = '', array $headers = []): JsonResponse
+    {
+        $message = !empty($customMessage) ? $customMessage : 'Requête invalide';
+        
+        $response = [
+            'code' => 400,
+            'message' => $message,
+            'errors' => $errors,
+            'data' => null
+        ];
+        
+        return new JsonResponse($response, 400, $headers);
+    }
+
+    /**
+     * Retourne une réponse d'erreur 500 (Internal Server Error)
+     * 
+     * @param string $errorMessage Message d'erreur
+     * @param array $headers En-têtes supplémentaires
+     * @return JsonResponse
+     */
+    public function respondServerError(string $errorMessage, array $headers = []): JsonResponse
+    {
+        $response = [
+            'code' => 500,
+            'message' => 'Erreur interne du serveur',
+            'error' => $errorMessage,
+            'data' => null
+        ];
+        
+        return new JsonResponse($response, 500, $headers);
+    }
+
+    /**
+     * Retourne une réponse d'erreur 404 (Not Found)
+     * 
+     * @param string $message Message d'erreur
+     * @param array $headers En-têtes supplémentaires
+     * @return JsonResponse
+     */
+    public function respondNotFound(string $message = 'Ressource non trouvée', array $headers = []): JsonResponse
+    {
+        $response = [
+            'code' => 404,
+            'message' => $message,
+            'data' => null
+        ];
+        
+        return new JsonResponse($response, 404, $headers);
+    }
+
+    /**
+     * Retourne une réponse d'erreur 403 (Forbidden)
+     * 
+     * @param string $message Message d'erreur
+     * @param array $headers En-têtes supplémentaires
+     * @return JsonResponse
+     */
+    public function respondForbidden(string $message = 'Accès refusé', array $headers = []): JsonResponse
+    {
+        $response = [
+            'code' => 403,
+            'message' => $message,
+            'data' => null
+        ];
+        
+        return new JsonResponse($response, 403, $headers);
+    }
+
 }

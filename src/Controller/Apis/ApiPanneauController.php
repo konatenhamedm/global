@@ -125,8 +125,8 @@ class ApiPanneauController extends ApiInterface
                 mediaType: "multipart/form-data",
                 schema: new OA\Schema(
                     properties: [
-                        new OA\Property(property: "gpslat", type: "string"),
-                        new OA\Property(property: "gpslong", type: "string"),
+                        new OA\Property(property: "gpsLat", type: "string"),
+                        new OA\Property(property: "gpsLong", type: "string"),
                         new OA\Property(property: "type", type: "string"),
                         new OA\Property(property: "illumination", type: "string"),
                         new OA\Property(property: "specifications", type: "string"),
@@ -180,21 +180,24 @@ class ApiPanneauController extends ApiInterface
         SpecificationRepository $specificationRepository,
         Utils $utils,
     ): Response {
-
         try {
             $names = 'document_' . '01';
             $filePrefix  = str_slug($names);
             $filePath = $this->getUploadDir(self::UPLOAD_PATH, true);
             // dd($filePath);
-    
-    
+
+
             $data = json_decode($request->getContent(), true);
-    
+
             $panneau = new Panneau();
-            $panneau->setGpsLat($request->get('gpslat'));
-            $panneau->setGpsLong($request->get('gpslong'));
+
+            $panneau->setGpsLat($request->get('gpsLat'));
+            $panneau->setGpsLong($request->get('gpsLong'));
+
             $panneau->setSpecification($specificationRepository->find($request->get('specification')));
+            //dd($request);
             $panneau->setType($typeRepository->find($request->get('type')));
+
             $panneau->setIllumination($illuminationRepository->find($request->get('illumination')));
             $panneau->setSousType($sousTypeRepository->find($request->get('soustype')));
             $panneau->setSubstrat($substratRepository->find($request->get('substrat')));
@@ -207,21 +210,21 @@ class ApiPanneauController extends ApiInterface
             $panneau->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
             $panneau->setCreatedAtValue(new DateTime());
             $panneau->setUpdatedAt(new DateTime());
-    
-    
+
+
             $facesData = $request->get('lignes');
-    
-           
+
+
             $uploadedFiles = $request->files->get('lignes');
-    
+
             foreach ($facesData as $index => $faceData) {
-               
+
                 $newFace = new Face();
                 $newFace
                     ->setNumFace($faceData['numFace'])
                     ->setCode($faceData['code'])
                     ->setPrix($faceData['prix']);
-    
+
                 // 4. Traiter les fichiers (s'ils existent pour cette indexation)
                 if (isset($uploadedFiles[$index])) {
                     $fileKeys = [
@@ -230,7 +233,7 @@ class ApiPanneauController extends ApiInterface
                         'imageSecondaire2',
                         'imageSecondaire3',
                     ];
-    
+
                     foreach ($fileKeys as $key) {
                         if (!empty($uploadedFiles[$index][$key])) {
                             $uploadedFile = $uploadedFiles[$index][$key];
@@ -242,33 +245,39 @@ class ApiPanneauController extends ApiInterface
                         }
                     }
                 }
-    
+
                 // 5. Gérer les métadonnées (user, dates)
                 $user = $this->userRepository->find($request->get('userUpdate'));
-                
+
                 $newFace->setCreatedBy($user);
                 $newFace->setUpdatedBy($user);
                 $newFace->setCreatedAtValue(new \DateTime());
                 $newFace->setUpdatedAt(new \DateTime());
-    
+
                 // 6. Lier la Face au Panneau
                 $panneau->addFace($newFace);
             }
 
 
 
-            
-    
-    
+
+
+
             $errorResponse = $this->errorResponse($panneau);
+          //  dd($errorResponse);
             if ($errorResponse !== null) {
                 return $errorResponse; // Retourne la réponse d'erreur si des erreurs sont présentes
             } else {
-    
+
                 $panneauRepository->add($panneau, true);
             }
         } catch (\Throwable $th) {
-            return $this->response('[]', 500, ['Content-Type' => 'application/json']);
+            return $this->respondBadRequest(
+               [
+                    'message' => 'Une erreur est survenue lors de la création du panneau.',
+                    'error' => $th->getMessage()
+                ]
+            );
         }
 
         return $this->responseData($panneau, 'group1', ['Content-Type' => 'application/json']);
@@ -332,7 +341,7 @@ class ApiPanneauController extends ApiInterface
                 $panneau->setCode($request->get('code'));
                 $panneau->setGpsLat($request->get('gpslat'));
                 $panneau->setGpsLong($request->get('gpslong'));
-            $panneau->setSpecification($specificationRepository->find($request->get('specification')));
+                $panneau->setSpecification($specificationRepository->find($request->get('specification')));
                 $panneau->setType($typeRepository->find($request->get('type')));
                 $panneau->setIllumination($illuminationRepository->find($request->get('illumination')));
                 $panneau->setSousType($sousTypeRepository->find($request->get('soustype')));

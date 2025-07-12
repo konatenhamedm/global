@@ -100,6 +100,10 @@ class Commande
     #[Group(["fichier", "group1",'group_commande'])]
     private ?Fichier $fichierContrat = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Group(["group1","group_commande"])]
+    private ?string $impressionVisuelle = null;
+
 
     public function __construct()
     {
@@ -391,6 +395,18 @@ class Commande
     public function setFichierContrat(Fichier $fichierContrat): static
     {
         $this->fichierContrat = $fichierContrat;
+
+        return $this;
+    }
+
+    public function getImpressionVisuelle(): ?string
+    {
+        return $this->impressionVisuelle;
+    }
+
+    public function setImpressionVisuelle(?string $impressionVisuelle): static
+    {
+        $this->impressionVisuelle = $impressionVisuelle;
 
         return $this;
     }

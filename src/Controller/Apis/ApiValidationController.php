@@ -7,11 +7,13 @@ use App\DTO\CiviliteDTO;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Entity\Civilite;
 use App\Entity\Commande;
+use App\Entity\Face;
 use App\Entity\Panneau;
 use App\Entity\Validation;
 use App\Repository\AvecImpressionRepository;
 use App\Repository\CiviliteRepository;
 use App\Repository\CommandeRepository;
+use App\Repository\FaceRepository;
 use App\Repository\IlluminationRepository;
 use App\Repository\OrientationRepository;
 use App\Repository\PanneauRepository;
@@ -52,16 +54,21 @@ class ApiValidationController extends ApiInterface
             content: new OA\MediaType(
                 mediaType: "multipart/form-data",
                 schema: new OA\Schema(
-                properties: [
-                    new OA\Property(property: "commentaire", type: "string"),
-                    new OA\Property(property: "commandeId", type: "string"),
-                    new OA\Property(property: "userId", type: "string"),
-                    new OA\Property(property: "etat", type: "string"),
-                    new OA\Property(property: "userUpdate", type: "string"),
+                    properties: [
+                        new OA\Property(property: "montantLocation", type: "string"),
+                        new OA\Property(property: "montantTotal", type: "string"),
+                        new OA\Property(property: "montantPose", type: "string"),
+                        new OA\Property(property: "montantImpression", type: "string"),
+                        new OA\Property(property: "commentaire", type: "string"),
+                        new OA\Property(property: "fichierContrat", type: "string", format: "binary"),
+                        new OA\Property(property: "commandeId", type: "string"),
+                        new OA\Property(property: "userId", type: "string"),
+                        new OA\Property(property: "etat", type: "string"),
+                        new OA\Property(property: "userUpdate", type: "string"),
 
-                ],
-                type: "object"
-            )
+                    ],
+                    type: "object"
+                )
             )
         ),
         responses: [
@@ -77,12 +84,54 @@ class ApiValidationController extends ApiInterface
         UserRepository $userRepository
     ): Response {
         $data = json_decode($request->getContent(), true);
+        $names = 'document_' . '01';
+        $filePrefix  = str_slug($names);
+        $filePath = $this->getUploadDir(self::UPLOAD_PATH, true);
+        // dd($filePath);
 
         try {
 
+            /*  - devis_attente                  
+            - proforma_attente_validation    
+            - contrat_attente_creation       
+            - contrat_attente_validation     
+            - contrat_en_cours               
+            - contrat_cloture  */
             $commande = $commandeRepository->find($request->get('commandeId'));
 
-            $commande->setEtat($request->get('etat'));
+
+            switch ($request->get('etat')) {
+                case 'devis_attente':
+                    $commande->setEtat('proforma_attente_validation');
+                    $commande->setMontant($request->get('montantTotal'));
+                    $commande->setMontantImpression($request->get('montantImpression'));
+                    $commande->setMontantLocation($request->get('montantLocation'));
+                    $commande->setMontantPose($request->get('montantPose'));
+
+                    break;
+
+                case 'proforma_attente_validation':
+                    $commande->setEtat('contrat_attente_creation');
+                    break;
+                case 'contrat_attente_creation':
+                    $commande->setEtat('contrat_attente_validation');
+                    $image = $request->files->get('fichierContrat');
+
+                    if ($image) {
+                        $fichier = $this->utils->sauvegardeFichier($filePath, $filePrefix, $image, self::UPLOAD_PATH);
+                        if ($fichier) {
+                            $commande->setFichierContrat($fichier);
+                        }
+                    }
+                    break;
+                case 'contrat_attente_validation':
+                    $commande->setEtat('contrat_en_cours');
+                    break;
+
+                default:
+                    # code...
+                    break;
+            }
             $commande->setUpdatedAt(new DateTime());
             $commande->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
 
@@ -101,10 +150,10 @@ class ApiValidationController extends ApiInterface
             if ($request->get('etat') == "devis_attente") {
                 $message = "Votre dossier vient de passer l'etape d'acceptation et est en séance d'analyse";
             } elseif ($request->get('etat') == "proforma_attente_validation") {
-                $message = "Votre dossier vient de passer d'être réjeté pour la raison suivante: " . $request->get('commentaire');
+                $message = "Votre dossier vient de passer l'etape d'acceptation et est en séance d'analyse"; ;
             } elseif ($request->get('etat') == "contrat_attente_creation") {
 
-                $message = "Votre dossier vient de passer d'être réfusé pour la raison suivante: " . $request->get('commentaire');
+                $message = "Votre dossier a été jugé conforme et est désormais en attente de validation finale. Vous recevrez une notification dès que le processus sera complété.";
             } elseif ($request->get('etat') == "contrat_attente_validation") {
                 $message = "Votre dossier a été jugé conforme et est désormais en attente de validation finale. Vous recevrez une notification dès que le processus sera complété.";
             } elseif ($request->get('etat') == "contrat_en_cours") {
@@ -168,51 +217,51 @@ class ApiValidationController extends ApiInterface
             content: new OA\MediaType(
                 mediaType: "multipart/form-data",
                 schema: new OA\Schema(
-                properties: [
-                    new OA\Property(property: "dateEnvoiVisuel", type: "date"),
-                    new OA\Property(property: "commentaireEnvoiVisuel", type: "string"),
-                    new OA\Property(property: "envoiVisuel", type: "string", format: "binary"),
+                    properties: [
+                        new OA\Property(property: "dateEnvoiVisuel", type: "date"),
+                        new OA\Property(property: "commentaireEnvoiVisuel", type: "string"),
+                        new OA\Property(property: "envoiVisuel", type: "string", format: "binary"),
 
 
-                    new OA\Property(property: "dateImpressionBat", type: "date"),
-                    new OA\Property(property: "commentaireImpressionBat", type: "string"),
+                        new OA\Property(property: "dateImpressionBat", type: "date"),
+                        new OA\Property(property: "commentaireImpressionBat", type: "string"),
 
 
-                    new OA\Property(property: "DateValidationBat", type: "date"),
-                    new OA\Property(property: "commentaireValidationBat", type: "string"),
+                        new OA\Property(property: "DateValidationBat", type: "date"),
+                        new OA\Property(property: "commentaireValidationBat", type: "string"),
 
-                    new OA\Property(property: "dateImpressionvisuelle", type: "date"),
-                    new OA\Property(property: "commentaireImpressionVisuelle", type: "string"),
-                    new OA\Property(property: "imageImpressionVisuelle", type: "string", format: "binary"),
+                        new OA\Property(property: "dateImpressionvisuelle", type: "date"),
+                        new OA\Property(property: "commentaireImpressionVisuelle", type: "string"),
+                        new OA\Property(property: "imageImpressionVisuelle", type: "string", format: "binary"),
 
-                    new OA\Property(property: "dateProgrammationPose", type: "date"),
-                    new OA\Property(property: "commentaireProgrammationPose", type: "string"),
-                    new OA\Property(property: "dateDebutPose", type: "date"),
-                    new OA\Property(property: "dateFinPose", type: "date"),
-                    new OA\Property(property: "dateDebutAlerte", type: "date"),
-
-
-                    new OA\Property(property: "dateRapportPose", type: "date"),
-                    new OA\Property(property: "commentairePose", type: "string"),
-                    new OA\Property(property: "rapportPoseDocument", type: "string", format: "binary"),
+                        new OA\Property(property: "dateProgrammationPose", type: "date"),
+                        new OA\Property(property: "commentaireProgrammationPose", type: "string"),
+                        new OA\Property(property: "dateDebutPose", type: "date"),
+                        new OA\Property(property: "dateFinPose", type: "date"),
+                        new OA\Property(property: "dateDebutAlerte", type: "date"),
 
 
-                    new OA\Property(property: "rapportDepose", type: "string", format: "binary"),
-                    new OA\Property(property: "dateRapportDepose", type: "date"),
-                    new OA\Property(property: "commentaireDepose", type: "string"),
+                        new OA\Property(property: "dateRapportPose", type: "date"),
+                        new OA\Property(property: "commentairePose", type: "string"),
+                        new OA\Property(property: "rapportPoseDocument", type: "string", format: "binary"),
 
 
-                    new OA\Property(property: "dateFinalisation", type: "date"),
-                    new OA\Property(property: "commentaireFinalisation", type: "string"),
+                        new OA\Property(property: "rapportDepose", type: "string", format: "binary"),
+                        new OA\Property(property: "dateRapportDepose", type: "date"),
+                        new OA\Property(property: "commentaireDepose", type: "string"),
 
 
-                    new OA\Property(property: "etape", type: "string"),
-                    new OA\Property(property: "commandeId", type: "string"),
-                    new OA\Property(property: "userUpdate", type: "string"),
+                        new OA\Property(property: "dateFinalisation", type: "date"),
+                        new OA\Property(property: "commentaireFinalisation", type: "string"),
 
-                ],
-                type: "object"
-            )
+
+                        new OA\Property(property: "etape", type: "string"),
+                        new OA\Property(property: "commandeId", type: "string"),
+                        new OA\Property(property: "userUpdate", type: "string"),
+
+                    ],
+                    type: "object"
+                )
             )
         ),
         responses: [
@@ -220,7 +269,7 @@ class ApiValidationController extends ApiInterface
         ]
     )]
     #[OA\Tag(name: 'validation')]
-    public function validationAvecImpression(Request $request, AvecImpressionRepository $avecImpressionRepository,CommandeRepository $commandeRepository): Response
+    public function validationAvecImpression(Request $request,FaceRepository $faceRepository, AvecImpressionRepository $avecImpressionRepository, CommandeRepository $commandeRepository): Response
     {
 
         try {
@@ -298,6 +347,14 @@ class ApiValidationController extends ApiInterface
                     $avecImpression->setDateFinalisation(new \DateTime($request->get('dateFinalisation')));
                     $avecImpression->setCommentaireFinalisation($request->get('commentaireFinalisation'));
                     $commandData->setEtat('contrat_cloture');
+
+                    $allLigne = $commandData->getLignes();
+                    foreach ($allLigne as $ligne) {
+                        $face = $ligne->getFace();
+                        $face->setEtat(Face::ETAT['Encours']);
+                        $faceRepository->add($face,true);
+                    }
+
                     $commandeRepository->add($commandData, true);
                     break;
             }
@@ -337,47 +394,47 @@ class ApiValidationController extends ApiInterface
             content: new OA\MediaType(
                 mediaType: "multipart/form-data",
                 schema: new OA\Schema(
-            properties: [
-                //ETAPE 1
-                new OA\Property(property: "dateEnvoiBache", type: "date"),
-                new OA\Property(property: "visualBache", type: "string"),
-                new OA\Property(property: "commentaireEnvoiBache", type: "string", format: "binary"),
+                    properties: [
+                        //ETAPE 1
+                        new OA\Property(property: "dateEnvoiBache", type: "date"),
+                        new OA\Property(property: "visualBache", type: "string"),
+                        new OA\Property(property: "commentaireEnvoiBache", type: "string", format: "binary"),
 
-                //ETAPE 2
-                new OA\Property(property: "dateProgrammationPose", type: "date"),
-                new OA\Property(property: "commentaireProgrammationpose", type: "string"),
+                        //ETAPE 2
+                        new OA\Property(property: "dateProgrammationPose", type: "date"),
+                        new OA\Property(property: "commentaireProgrammationpose", type: "string"),
 
-                //ETAPE 3
+                        //ETAPE 3
 
-                new OA\Property(property: "dateRapportPose", type: "date"),
-                new OA\Property(property: "commentRapportPose", type: "string"),
-                new OA\Property(property: "rapportPoseImage", type: "string", format: "binary"),
+                        new OA\Property(property: "dateRapportPose", type: "date"),
+                        new OA\Property(property: "commentRapportPose", type: "string"),
+                        new OA\Property(property: "rapportPoseImage", type: "string", format: "binary"),
 
-                //ETAPE 4
+                        //ETAPE 4
 
-                new OA\Property(property: "dateRapportDepose", type: "date"),
-                new OA\Property(property: "commentaireRapportDepose", type: "string"),
-                new OA\Property(property: "rapportDepose", type: "string", format: "binary"),
+                        new OA\Property(property: "dateRapportDepose", type: "date"),
+                        new OA\Property(property: "commentaireRapportDepose", type: "string"),
+                        new OA\Property(property: "rapportDepose", type: "string", format: "binary"),
 
-                //ETAPE 5
-               
-                new OA\Property(property: "dateFinalisation", type: "date"),
-                new OA\Property(property: "commentaireFinalisation", type: "string"),
+                        //ETAPE 5
+
+                        new OA\Property(property: "dateFinalisation", type: "date"),
+                        new OA\Property(property: "commentaireFinalisation", type: "string"),
 
 
-                new OA\Property(property: "etape", type: "string"),
-                new OA\Property(property: "commandeId", type: "string"),
-                new OA\Property(property: "userUpdate", type: "string"),
+                        new OA\Property(property: "etape", type: "string"),
+                        new OA\Property(property: "commandeId", type: "string"),
+                        new OA\Property(property: "userUpdate", type: "string"),
 
-            ],
-            type: "object"
-        )
-        )
+                    ],
+                    type: "object"
+                )
+            )
         )
     )]
     #[OA\Tag(name: 'validation')]
     // #[Security(name: 'Bearer')]
-    public function sansImpression(Request $request, SansImpressionRepository $sansImpressionRepository,CommandeRepository $commandeRepository): Response
+    public function sansImpression(Request $request,FaceRepository $faceRepository, SansImpressionRepository $sansImpressionRepository, CommandeRepository $commandeRepository): Response
     {
         try {
             $commandeId = $request->get('commandeId');
@@ -433,6 +490,13 @@ class ApiValidationController extends ApiInterface
                     $sansImpression->setDateFinalisation(new \DateTime($request->get('dateFinalisation')));
                     $sansImpression->setCommentaireFinalisation($request->get('commentaireFinalisation'));
                     $commandData->setEtat('contrat_cloture');
+                    $allLigne = $commandData->getLignes();
+                    foreach ($allLigne as $ligne) {
+                        $face = $ligne->getFace();
+                        $face->setEtat(Face::ETAT['Encours']);
+                        $faceRepository->add($face,true);
+                    }
+
                     $commandeRepository->add($commandData, true);
                     break;
             }
