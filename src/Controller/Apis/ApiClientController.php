@@ -82,30 +82,24 @@ class ApiClientController extends ApiInterface
             
         )
     )]
-    #[OA\Parameter(
-        name: 'code',
-        in: 'query',
-        schema: new OA\Schema(type: 'string')
-    )]
+    
     #[OA\Tag(name: 'client')]
     //#[Security(name: 'Bearer')]
     public function getOne(?Client $client)
     {
+
         try {
-            if ($client) {
-                $response = $this->response($client);
-            } else {
-                $this->setMessage('Cette ressource est inexistante');
-                $this->setStatusCode(300);
-                $response = $this->response($client);
-            }
+
+            $response =  $this->responseData($client, 'group1', ['Content-Type' => 'application/json']);
         } catch (\Exception $exception) {
-            $this->setMessage($exception->getMessage());
+            $this->setMessage("");
             $response = $this->response('[]');
         }
 
-
+        // On envoie la réponse
         return $response;
+
+
     }
 
 
