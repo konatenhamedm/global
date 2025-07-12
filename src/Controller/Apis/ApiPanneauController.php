@@ -110,6 +110,48 @@ class ApiPanneauController extends ApiInterface
 
         return $response;
     }
+    #[Route('/get/one/by/code/{code}', methods: ['GET'])]
+    /**
+     * Affiche un(e) panneau en offrant un identifiant.
+     */
+    #[OA\Response(
+        response: 200,
+        description: 'Affiche un(e) panneau en offrant un identifiant',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(ref: new Model(type: Panneau::class, groups: ['full']))
+
+        )
+    )]
+    #[OA\Parameter(
+        name: 'code',
+        in: 'query',
+        schema: new OA\Schema(type: 'string')
+    )]
+    #[OA\Tag(name: 'panneau')]
+    //#[Security(name: 'Bearer')]
+    public function getOneByCode(PanneauRepository $panneauRepository,$code)
+    {
+        try {
+
+            $panneau = $panneauRepository->findOneBy(['code' => $code]);
+            if ($panneau) {
+               // $response = $this->response($panneau);
+            $response =  $this->responseData($panneau, 'group1', ['Content-Type' => 'application/json']);
+
+            } else {
+                $this->setMessage('Cette ressource est inexistante');
+                $this->setStatusCode(300);
+                $response = $this->responseData([], 'group1', ['Content-Type' => 'application/json']);
+            }
+        } catch (\Exception $exception) {
+            $this->setMessage($exception->getMessage());
+            $response = $this->response('[]');
+        }
+
+
+        return $response;
+    }
 
 
     #[Route('/create',  methods: ['POST'])]
