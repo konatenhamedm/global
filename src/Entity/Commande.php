@@ -105,6 +105,10 @@ class Commande
     #[Group(["group1","group_commande"])]
     private ?string $impressionVisuelle = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Group(["group1","group_commande"])]
+    private ?string $nombreJour = null;
+
 
     public function __construct()
     {
@@ -408,6 +412,18 @@ class Commande
     public function setImpressionVisuelle(?string $impressionVisuelle): static
     {
         $this->impressionVisuelle = $impressionVisuelle;
+
+        return $this;
+    }
+
+    public function getNombreJour(): ?string
+    {
+        return $this->nombreJour;
+    }
+
+    public function setNombreJour(?string $nombreJour): static
+    {
+        $this->nombreJour = $nombreJour;
 
         return $this;
     }

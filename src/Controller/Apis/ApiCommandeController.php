@@ -200,9 +200,13 @@ class ApiCommandeController extends ApiInterface
         
         $dateDebut = new \DateTime($request->get('dateDebut'));
         $dateFin = new \DateTime($request->get('dateFin'));
+
+        $interval = $dateDebut->diff($dateFin);
+        $nombreDeJours = $interval->days;
         
         $commande->setDateDebut($dateDebut);
         $commande->setDateFin($dateFin);
+        $commande->setNombreJour($nombreDeJours);
         
         $user = $this->userRepository->find($request->get('userUpdate'));
         $commande->setCreatedBy($user);
