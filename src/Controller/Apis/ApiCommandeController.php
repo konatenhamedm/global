@@ -155,7 +155,6 @@ class ApiCommandeController extends ApiInterface
                     new OA\Property(property: "libelle", type: "string"),
                     new OA\Property(property: "client", type: "string"),
                     new OA\Property(property: "impressionVisuelle", type: "boolean"),
-                    new OA\Property(property: "montant", type: "string"),
                     new OA\Property(property: "dateDebut", type: "string"),
                     new OA\Property(property: "dateFin", type: "string"),
                     new OA\Property(
@@ -197,42 +196,49 @@ class ApiCommandeController extends ApiInterface
         $commande->setLibelle($this->generateLibelleParJour());
         $commande->setImpressionVisuelle($request->get('impressionVisuelle'));
         $commande->setClient($clientRepository->find($request->get('client')));
-        $commande->setMontant($request->get('montant'));
         $commande->setCode($this->code());
-        $commande->setDateDebut(new \DateTime($request->get('dateDebut')));
-        $commande->setDateFin(new \DateTime($request->get('dateFin')));
-        $commande->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
-        $commande->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
-        $commande->setCreatedAtValue(new DateTime());
-        $commande->setUpdatedAt(new DateTime());
-
+        
+        $dateDebut = new \DateTime($request->get('dateDebut'));
+        $dateFin = new \DateTime($request->get('dateFin'));
+        
+        $commande->setDateDebut($dateDebut);
+        $commande->setDateFin($dateFin);
+        
+        $user = $this->userRepository->find($request->get('userUpdate'));
+        $commande->setCreatedBy($user);
+        $commande->setUpdatedBy($user);
+        
+        $commande->setCreatedAtValue(new \DateTime());
+        $commande->setUpdatedAt(new \DateTime());
+        
         $errorResponse = $this->errorResponse($commande);
         if ($errorResponse !== null) {
             return $errorResponse;
-        } 
-
-
-
-
+        }
+        
+        $somme = 0;
         $lignes = $request->get('lignes');
         foreach ($lignes as $ligneData) {
             $face = $faceRepository->find($ligneData['face']);
-
-            $ligneEntity = new Ligne();
-            $ligneEntity->setFace($face);
-            $ligneEntity->setPrix($face->getPrix());
-            $ligneEntity->setDateDebut(new \DateTime($request->get('dateDebut')));
-            $ligneEntity->setDateFin(new \DateTime($request->get('dateFin')));
-            $ligneEntity->setCommande($commande);
-
-            $commandeRepository->add($commande, true); 
-            $ligneRepository->add($ligneEntity, true);
-
+            $somme += $face->getPrix();
+        
+            $ligne = new Ligne();
+            $ligne->setFace($face);
+            $ligne->setPrix($face->getPrix());
+            $ligne->setDateDebut($dateDebut);
+            $ligne->setDateFin($dateFin);
+            $ligne->setCommande($commande);
+        
+            $ligneRepository->add($ligne); // sans flush pour le moment
+        
             $face->setEtat(Face::ETAT['Reserve']);
-            $face->dateDebut(new \DateTime($request->get('dateDebut')));
-            $face->setDateFin(new \DateTime($request->get('dateFin')));
-            $faceRepository->add($face, true);
+            $face->setDateDebut($dateDebut);
+            $face->setDateFin($dateFin);
+            $faceRepository->add($face); // sans flush
         }
+        
+        $commande->setMontantProvisoire($somme);
+        $commandeRepository->add($commande, true);
 
         if($request->get('impressionVisuelle') == "avec"){
 
