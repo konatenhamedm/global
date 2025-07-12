@@ -30,11 +30,11 @@ class Personne
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Group(["group1"])]
+    #[Group(["group1","group_commande"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Group(["group1"])]
+    #[Group(["group1","group_commande"])]
     private ?string $contact = null;
 
     #[ORM\OneToOne(mappedBy: 'personne', cascade: ['persist', 'remove'])]

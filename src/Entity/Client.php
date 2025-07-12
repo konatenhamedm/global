@@ -23,7 +23,7 @@ class Client extends Personne
     private ?string $prenoms = null;
 
     #[ORM\Column(length: 255,nullable: true)]
-    #[Group(["group1"])]
+    #[Group(["group1","group_commande"])]
     private ?string $email = null;
 
     #[ORM\Column(length: 255,nullable: true)]
