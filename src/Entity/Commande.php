@@ -30,6 +30,7 @@ class Commande
     private ?string $libelle = null;
 
     #[ORM\ManyToOne(inversedBy: 'commandes')]
+    #[Group(["group1","group_commande"])]
     private ?Client $client = null;
 
     #[ORM\Column(nullable: true)]

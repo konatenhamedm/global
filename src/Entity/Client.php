@@ -15,11 +15,11 @@ class Client extends Personne
     
 
     #[ORM\Column(length: 255,nullable: true)]
-    #[Group(["group1"])]
+    #[Group(["group1","group_commande"])]
     private ?string $nom = null;
 
     #[ORM\Column(length: 255,nullable: true)]
-    #[Group(["group1"])]
+    #[Group(["group1","group_commande"])]
     private ?string $prenoms = null;
 
     #[ORM\Column(length: 255,nullable: true)]
@@ -31,7 +31,7 @@ class Client extends Personne
     private ?string $registreCommerce = null;
 
     #[ORM\Column(length: 255,nullable: true)]
-    #[Group(["group1"])]
+    #[Group(["group1","group_commande"])]
     private ?string $denomination = null;
 
     #[ORM\Column(length: 255,nullable: true)]
@@ -59,7 +59,7 @@ class Client extends Personne
     private ?string $localisation = null;
 
     #[ORM\ManyToOne(inversedBy: 'clients')]
-    #[Group(["group1"])]
+    #[Group(["group1","group_commande"])]
     private ?TypeClient $typeClient = null;
 
     /**

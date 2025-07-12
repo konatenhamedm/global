@@ -17,15 +17,15 @@ class TypeClient
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Group(["group1"])]
+    #[Group(["group1","group_commande"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Group(["group1"])]
+    #[Group(["group1","group_commande"])]
     private ?string $code = null;
 
     #[ORM\Column(length: 255)]
-    #[Group(["group1"])]
+    #[Group(["group1","group_commande"])]
     private ?string $libelle = null;
 
     /**
