@@ -103,7 +103,7 @@ class Commande
 
     #[ORM\ManyToOne(inversedBy: 'commandes')]
     #[Group(["group1","group_commande"])]
-    private ?SansImpression $SansImpression = null;
+    private ?sansImpression $sansImpression = null;
 
 
     public function __construct()
@@ -376,14 +376,14 @@ class Commande
         return $this;
     }
 
-    public function getSansImpression(): ?SansImpression
+    public function getSansImpression(): ?sansImpression
     {
-        return $this->SansImpression;
+        return $this->sansImpression;
     }
 
-    public function setSansImpression(?SansImpression $SansImpression): static
+    public function setSansImpression(?sansImpression $sansImpression): static
     {
-        $this->SansImpression = $SansImpression;
+        $this->sansImpression = $sansImpression;
 
         return $this;
     }
