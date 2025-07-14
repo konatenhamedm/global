@@ -91,7 +91,7 @@ class SansImpression
     /**
      * @var Collection<int, Commande>
      */
-    #[ORM\OneToMany(targetEntity: Commande::class, mappedBy: 'SansImpression')]
+    #[ORM\OneToMany(targetEntity: Commande::class, mappedBy: 'sansImpression')]
     private Collection $commandes;
 
     public function __construct()
