@@ -227,7 +227,7 @@ class ApiValidationController extends ApiInterface
                         new OA\Property(property: "commentaireImpressionBat", type: "string"),
 
 
-                        new OA\Property(property: "DateValidationBat", type: "date"),
+                        new OA\Property(property: "dateValidationBat", type: "date"),
                         new OA\Property(property: "commentaireValidationBat", type: "string"),
 
                         new OA\Property(property: "dateImpressionvisuelle", type: "date"),
@@ -289,7 +289,7 @@ class ApiValidationController extends ApiInterface
             $filePath = $this->getUploadDir(self::UPLOAD_PATH, true);
 
             // Champs communs
-            $avecImpression->setEtape($etape);
+            
             $avecImpression->setUpdatedAt(new \DateTime());
             $avecImpression->setUpdatedBy($this->userRepository->find($userId));
 
@@ -300,16 +300,21 @@ class ApiValidationController extends ApiInterface
                     $this->updateFile($request->files->get('envoiVisuel'), $filePath, $filePrefix, function ($fichier) use ($avecImpression) {
                         $avecImpression->setEnvoiVisuel($fichier);
                     });
+                    $avecImpression->setEtape("etape_2");
                     break;
 
                 case 'etape_2':
                     $avecImpression->setDateImpressionBat(new \DateTime($request->get('dateImpressionBat')));
                     $avecImpression->setCommentaireImpressionBat($request->get('commentaireImpressionBat'));
+                    $avecImpression->setEtape("etape_3");
+
                     break;
 
                 case 'etape_3':
-                    $avecImpression->setDateValidationBat(new \DateTime($request->get('DateValidationBat')));
+                    $avecImpression->setDateValidationBat(new \DateTime($request->get('dateValidationBat')));
                     $avecImpression->setCommentaireValidationBat($request->get('commentaireValidationBat'));
+                    $avecImpression->setEtape("etape_4");
+
                     break;
 
                 case 'etape_4':
@@ -318,6 +323,8 @@ class ApiValidationController extends ApiInterface
                     $this->updateFile($request->files->get('imageImpressionVisuelle'), $filePath, $filePrefix, function ($fichier) use ($avecImpression) {
                         $avecImpression->setImageImpressionVisuelle($fichier);
                     });
+                    $avecImpression->setEtape("etape_5");
+
                     break;
 
                 case 'etape_5':
@@ -326,6 +333,8 @@ class ApiValidationController extends ApiInterface
                     $avecImpression->setDateDebutPose(new \DateTime($request->get('dateDebutPose')));
                     $avecImpression->setDateFinPose(new \DateTime($request->get('dateFinPose')));
                     $avecImpression->setDateDebutAlerte(new \DateTime($request->get('dateDebutAlerte')));
+                    $avecImpression->setEtape("etape_6");
+
                     break;
 
                 case 'etape_6':
@@ -334,6 +343,8 @@ class ApiValidationController extends ApiInterface
                     $this->updateFile($request->files->get('rapportPoseDocument'), $filePath, $filePrefix, function ($fichier) use ($avecImpression) {
                         $avecImpression->setRapportPoseDocument($fichier);
                     });
+                    $avecImpression->setEtape("etape_7");
+
                     break;
 
                 case 'etape_7':
@@ -342,6 +353,8 @@ class ApiValidationController extends ApiInterface
                     $this->updateFile($request->files->get('rapportDepose'), $filePath, $filePrefix, function ($fichier) use ($avecImpression) {
                         $avecImpression->setRapportDepose($fichier);
                     });
+                    $avecImpression->setEtape("etape_8");
+
                     break;
 
                 case 'etape_8':
@@ -453,7 +466,6 @@ class ApiValidationController extends ApiInterface
             }
 
             // Données communes
-            $sansImpression->setEtape($etape);
             $sansImpression->setUpdatedAt(new \DateTime());
             $sansImpression->setUpdatedBy($this->userRepository->find($userUpdateId));
 
@@ -464,11 +476,14 @@ class ApiValidationController extends ApiInterface
                     $this->updateFile($request->files->get('visualBache'), $filePath, $filePrefix, function ($fichier) use ($sansImpression) {
                         $sansImpression->setVisualBache($fichier);
                     });
+            $sansImpression->setEtape("etape_2");
+
                     break;
 
                 case 'etape_2':
                     $sansImpression->setDateProgrammationPose(new \DateTime($request->get('dateProgrammationPose')));
                     $sansImpression->setCommentaireProgrammationpose($request->get('commentaireProgrammationpose'));
+                    $sansImpression->setEtape("etape_3");
                     break;
 
                 case 'etape_3':
@@ -477,6 +492,7 @@ class ApiValidationController extends ApiInterface
                     $this->updateFile($request->files->get('rapportPoseImage'), $filePath, $filePrefix, function ($fichier) use ($sansImpression) {
                         $sansImpression->setRapportPoseImage($fichier);
                     });
+                    $sansImpression->setEtape("etape_4");
                     break;
 
                 case 'etape_4':
@@ -486,6 +502,7 @@ class ApiValidationController extends ApiInterface
                     $this->updateFile($request->files->get('rapportDepose'), $filePath, $filePrefix, function ($fichier) use ($sansImpression) {
                         $sansImpression->setRapportDepose($fichier);
                     });
+                    $sansImpression->setEtape("etape_5");
                     break;
 
                 case 'etape_5':
