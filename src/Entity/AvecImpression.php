@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\AvecImpressionRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups as Group;
 use Doctrine\DBAL\Types\Types;
@@ -17,6 +19,7 @@ class AvecImpression
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?int $id = null;
 
 
@@ -24,16 +27,18 @@ class AvecImpression
 
     #[ORM\ManyToOne(cascade: ["persist"], fetch: "EAGER")]
     #[ORM\JoinColumn(nullable: true)]
-    #[Group(["fichier", "group1"])]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?Fichier $envoiVisuel = null;
 
     #[ORM\Column(nullable: true)]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?\DateTime $dateEnvoiVisuel = null;
 
     //ETAPE 2
 
 
     #[ORM\Column(nullable: true)]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?\DateTime $dateImpressionBat = null;
 
  
@@ -41,92 +46,117 @@ class AvecImpression
     //etape 3
 
     #[ORM\Column(nullable: true)]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?\DateTime $DateValidationBat = null;
 
     
     //ETAPE 4
 
     #[ORM\Column(nullable: true)]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?\DateTime $dateImpressionvisuelle = null;
 
    
     //ETAPE 5
-
+    #[Group(["fichier", "group1","group_commande"])]
     #[ORM\Column(nullable: true)]
     private ?\DateTime $dateProgrammationPose = null;
 
 
     #[ORM\Column(nullable: true)]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?\DateTime $dateDebutPose = null;
 
     #[ORM\Column(nullable: true)]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?\DateTime $dateFinPose = null;
 
     #[ORM\Column(nullable: true)]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?\DateTime $dateDebutAlerte = null;
 
     //ETAPE 6
 
     #[ORM\Column(nullable: true)]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?\DateTime $dateRapportPose = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?string $commentairePose = null;
 
    //ETAPE 7
 
     #[ORM\ManyToOne(cascade: ["persist"], fetch: "EAGER")]
     #[ORM\JoinColumn(nullable: true)]
-    #[Group(["fichier", "group1"])]
+    #[Group(["fichier", "group1",'group_commande'])]
     private ?Fichier $rapportDepose = null;
 
     #[ORM\Column(nullable: true)]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?\DateTime $dateRapportDepose = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?string $commentaireDepose = null;
 
 //ETAPE 8
 
     #[ORM\Column(nullable: true)]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?\DateTime $dateFinalisation = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?string $commentaireFinalisation = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Group(["group1","group_commande"])]
     private ?string $etape = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?string $commentaireEnvoiVisuel = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?string $commentaireImpressionBat = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?string $commentaireValidationBat = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?string $commentaireImpressionVisuelle = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?string $commentaireProgrammationPose = null;
 
-    #[ORM\ManyToOne(inversedBy: 'avecImpressions')]
-    private ?Commande $commande = null;
-
-
+   
     #[ORM\ManyToOne(cascade: ["persist"], fetch: "EAGER")]
     #[ORM\JoinColumn(nullable: true)]
-    #[Group(["fichier", "group1"])]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?Fichier $imageImpressionVisuelle = null;
 
    
 
     #[ORM\ManyToOne(cascade: ["persist"], fetch: "EAGER")]
     #[ORM\JoinColumn(nullable: true)]
-    #[Group(["fichier", "group1"])]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?Fichier $rapportPoseDocument = null;
+
+    /**
+     * @var Collection<int, Commande>
+     */
+    #[ORM\OneToMany(targetEntity: Commande::class, mappedBy: 'avecImpression')]
+    private Collection $commandes;
+
+    public function __construct()
+    {
+        $this->commandes = new ArrayCollection();
+    }
 
 
   
@@ -411,18 +441,7 @@ class AvecImpression
         return $this;
     }
 
-    public function getCommande(): ?Commande
-    {
-        return $this->commande;
-    }
-
-    public function setCommande(?Commande $commande): static
-    {
-        $this->commande = $commande;
-
-        return $this;
-    }
-
+    
     public function getImageImpressionVisuelle(): ?Fichier
     {
         return $this->imageImpressionVisuelle;
@@ -443,6 +462,36 @@ class AvecImpression
     public function setRapportPoseDocument(?string $rapportPoseDocument): static
     {
         $this->rapportPoseDocument = $rapportPoseDocument;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Commande>
+     */
+    public function getCommandes(): Collection
+    {
+        return $this->commandes;
+    }
+
+    public function addCommande(Commande $commande): static
+    {
+        if (!$this->commandes->contains($commande)) {
+            $this->commandes->add($commande);
+            $commande->setAvecImpression($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCommande(Commande $commande): static
+    {
+        if ($this->commandes->removeElement($commande)) {
+            // set the owning side to null (unless already changed)
+            if ($commande->getAvecImpression() === $this) {
+                $commande->setAvecImpression(null);
+            }
+        }
 
         return $this;
     }

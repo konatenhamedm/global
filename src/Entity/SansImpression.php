@@ -3,8 +3,12 @@
 namespace App\Entity;
 
 use App\Repository\SansImpressionRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups as Group;
+
 
 #[ORM\Entity(repositoryClass: SansImpressionRepository::class)]
 class SansImpression
@@ -15,62 +19,87 @@ class SansImpression
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Group(["group1","group_commande"])]
     private ?int $id = null;
 
     // ETAPE ENVOI VISUEL BACHE
 
     #[ORM\Column(nullable: true)]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?\DateTime $dateEnvoiBache = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?string $visualBache = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?string $commentaireEnvoiBache = null;
 
     // ETAPE PROGRAMMATION POSE
 
     #[ORM\Column(nullable: true)]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?\DateTime $dateProgrammationPose = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?string $commentaireProgrammationpose = null;
 
     // ETAPE RAPPORT DEPOSE
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?string $rapportPoseImage = null;
 
     #[ORM\Column(nullable: true)]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?\DateTime $dateRapportPose = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?string $commentRapportPose = null;
 
     // ETAPE RAPPORT DEPOSE
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?string $rapportDepose = null;
 
     #[ORM\Column(nullable: true)]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?\DateTime $dateRapportDepose = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?string $commentaireRapportDepose = null;
 
     // ETAPE FINALISATION   bbb
 
     #[ORM\Column(nullable: true)]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?\DateTime $dateFinalisation = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Group(["fichier", "group1","group_commande"])]
     private ?string $commentaireFinalisation = null;
 
     #[ORM\Column(length: 255)]
+    #[Group(["group1","group_commande"])]
     private ?string $etape = null;
 
-    #[ORM\ManyToOne(inversedBy: 'sansImpressions')]
-    private ?Commande $commande = null;
+    /**
+     * @var Collection<int, Commande>
+     */
+    #[ORM\OneToMany(targetEntity: Commande::class, mappedBy: 'SansImpression')]
+    private Collection $commandes;
+
+    public function __construct()
+    {
+        $this->commandes = new ArrayCollection();
+    }
+
+   
 
     public function getId(): ?int
     {
@@ -245,15 +274,35 @@ class SansImpression
         return $this;
     }
 
-    public function getCommande(): ?Commande
+    /**
+     * @return Collection<int, Commande>
+     */
+    public function getCommandes(): Collection
     {
-        return $this->commande;
+        return $this->commandes;
     }
 
-    public function setCommande(?Commande $commande): static
+    public function addCommande(Commande $commande): static
     {
-        $this->commande = $commande;
+        if (!$this->commandes->contains($commande)) {
+            $this->commandes->add($commande);
+            $commande->setSansImpression($this);
+        }
 
         return $this;
     }
+
+    public function removeCommande(Commande $commande): static
+    {
+        if ($this->commandes->removeElement($commande)) {
+            // set the owning side to null (unless already changed)
+            if ($commande->getSansImpression() === $this) {
+                $commande->setSansImpression(null);
+            }
+        }
+
+        return $this;
+    }
+
+   
 }

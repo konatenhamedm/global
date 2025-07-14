@@ -276,9 +276,10 @@ class ApiValidationController extends ApiInterface
             $commandeId = $request->get('commandeId');
             $etape = $request->get('etape');
             $userId = $request->get('userUpdate');
+            $commande = $commandeRepository->find($commandeId);
 
-            $avecImpression = $avecImpressionRepository->findOneBy(['commande' => $commandeId]);
-            $commandData = $avecImpression->getCommande();
+            $avecImpression = $commande->getAvecImpression();
+          
             if (!$avecImpression) {
                 throw new \Exception('Commande non trouvée');
             }
@@ -346,16 +347,16 @@ class ApiValidationController extends ApiInterface
                 case 'etape_8':
                     $avecImpression->setDateFinalisation(new \DateTime($request->get('dateFinalisation')));
                     $avecImpression->setCommentaireFinalisation($request->get('commentaireFinalisation'));
-                    $commandData->setEtat('contrat_cloture');
+                    $commande->setEtat('contrat_cloture');
 
-                    $allLigne = $commandData->getLignes();
+                    $allLigne = $commande->getLignes();
                     foreach ($allLigne as $ligne) {
                         $face = $ligne->getFace();
                         $face->setEtat(Face::ETAT['Encours']);
                         $faceRepository->add($face,true);
                     }
 
-                    $commandeRepository->add($commandData, true);
+                    $commandeRepository->add($commande, true);
                     break;
             }
 
@@ -440,8 +441,9 @@ class ApiValidationController extends ApiInterface
             $commandeId = $request->get('commandeId');
             $etape = $request->get('etape');
             $userUpdateId = $request->get('userUpdate');
-            $sansImpression = $sansImpressionRepository->findOneBy(['commande' => $commandeId]);
-            $commandData = $sansImpression->getCommande();
+            $commande = $commandeRepository->find($commandeId);
+            $sansImpression =$commande->getSansImpression();
+        
 
             $filePrefix = str_slug('document_01');
             $filePath = $this->getUploadDir(self::UPLOAD_PATH, true);
@@ -489,15 +491,15 @@ class ApiValidationController extends ApiInterface
                 case 'etape_5':
                     $sansImpression->setDateFinalisation(new \DateTime($request->get('dateFinalisation')));
                     $sansImpression->setCommentaireFinalisation($request->get('commentaireFinalisation'));
-                    $commandData->setEtat('contrat_cloture');
-                    $allLigne = $commandData->getLignes();
+                    $commande->setEtat('contrat_cloture');
+                    $allLigne = $commande->getLignes();
                     foreach ($allLigne as $ligne) {
                         $face = $ligne->getFace();
                         $face->setEtat(Face::ETAT['Encours']);
                         $faceRepository->add($face,true);
                     }
 
-                    $commandeRepository->add($commandData, true);
+                    $commandeRepository->add($commande, true);
                     break;
             }
 

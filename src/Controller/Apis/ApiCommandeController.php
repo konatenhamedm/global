@@ -151,29 +151,29 @@ class ApiCommandeController extends ApiInterface
             content: new OA\MediaType(
                 mediaType: "multipart/form-data",
                 schema: new OA\Schema(
-                properties: [
-                    new OA\Property(property: "libelle", type: "string"),
-                    new OA\Property(property: "client", type: "string"),
-                    new OA\Property(property: "impressionVisuelle", type: "boolean"),
-                    new OA\Property(property: "dateDebut", type: "string"),
-                    new OA\Property(property: "dateFin", type: "string"),
-                    new OA\Property(
-                        property: "lignes",
-                        type: "array",
-                        items: new OA\Items(
-                            type: "object",
-                            properties: [
-                                new OA\Property(property: "face", type: "string"),
-                                
-                                
-                            ]
-                        ),
-                    ),
-                    new OA\Property(property: "userUpdate", type: "string"),
+                    properties: [
+                        new OA\Property(property: "libelle", type: "string"),
+                        new OA\Property(property: "client", type: "string"),
+                        new OA\Property(property: "impressionVisuelle", type: "boolean"),
+                        new OA\Property(property: "dateDebut", type: "string"),
+                        new OA\Property(property: "dateFin", type: "string"),
+                        new OA\Property(
+                            property: "lignes",
+                            type: "array",
+                            items: new OA\Items(
+                                type: "object",
+                                properties: [
+                                    new OA\Property(property: "face", type: "string"),
 
-                ],
-                type: "object"
-            )
+
+                                ]
+                            ),
+                        ),
+                        new OA\Property(property: "userUpdate", type: "string"),
+
+                    ],
+                    type: "object"
+                )
             )
         ),
         responses: [
@@ -181,15 +181,16 @@ class ApiCommandeController extends ApiInterface
         ]
     )]
     #[OA\Tag(name: 'commande')]
-    public function create(Request $request, CommandeRepository $commandeRepository,
-     ClientRepository $clientRepository, 
-     FaceRepository $faceRepository, 
-     LigneRepository $ligneRepository,
-     AvecImpressionRepository $avecImpressionRepository,
-     SansImpressionRepository $sansImpressionRepository,
-     
-     ): Response
-    {
+    public function create(
+        Request $request,
+        CommandeRepository $commandeRepository,
+        ClientRepository $clientRepository,
+        FaceRepository $faceRepository,
+        LigneRepository $ligneRepository,
+        AvecImpressionRepository $avecImpressionRepository,
+        SansImpressionRepository $sansImpressionRepository,
+
+    ): Response {
 
         $data = json_decode($request->getContent(), true);
         $commande = new Commande();
@@ -197,29 +198,29 @@ class ApiCommandeController extends ApiInterface
         $commande->setImpressionVisuelle($request->get('impressionVisuelle'));
         $commande->setClient($clientRepository->find($request->get('client')));
         $commande->setCode($this->code());
-        
+
         $dateDebut = new \DateTime($request->get('dateDebut'));
         $dateFin = new \DateTime($request->get('dateFin'));
 
         $interval = $dateDebut->diff($dateFin);
         $nombreDeJours = $interval->days;
-        
+
         $commande->setDateDebut($dateDebut);
         $commande->setDateFin($dateFin);
         $commande->setNombreJour($nombreDeJours);
-        
+
         $user = $this->userRepository->find($request->get('userUpdate'));
         $commande->setCreatedBy($user);
         $commande->setUpdatedBy($user);
-        
+
         $commande->setCreatedAtValue(new \DateTime());
         $commande->setUpdatedAt(new \DateTime());
-        
+
         $errorResponse = $this->errorResponse($commande);
         if ($errorResponse !== null) {
             return $errorResponse;
         }
-        
+
         $somme = 0;
         $lignes = $request->get('lignes');
 
@@ -228,40 +229,39 @@ class ApiCommandeController extends ApiInterface
 
             $face = $faceRepository->findOneBy(['code' => $ligneData['face']]);
             $somme += $face->getPrix();
-        
+
             $ligne = new Ligne();
             $ligne->setFace($face);
             $ligne->setPrix($face->getPrix());
             $ligne->setDateDebut($dateDebut);
             $ligne->setDateFin($dateFin);
             $ligne->setCommande($commande);
-        
+
             $ligneRepository->add($ligne); // sans flush pour le moment
-        
+
             $face->setEtat(Face::ETAT['Reserve']);
             $face->setDateDebut($dateDebut);
             $face->setDateFin($dateFin);
             $faceRepository->add($face); // sans flush
         }
-        
-        $commande->setMontantProvisoire($somme);
-        $commandeRepository->add($commande, true);
 
-        if($request->get('impressionVisuelle') == "avec"){
+        $commande->setMontantProvisoire($somme);
+
+
+        if ($request->get('impressionVisuelle') == "avec") {
 
             $avecImpression = new AvecImpression();
-            $avecImpression->setCommande($commande);
             $avecImpression->setEtape('etape_1');
             $avecImpression->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
             $avecImpression->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
             $avecImpression->setCreatedAtValue(new DateTime());
             $avecImpression->setUpdatedAt(new DateTime());
             $avecImpressionRepository->add($avecImpression, true);
-            
-            
-        }else{
-           $sansImpression = new SansImpression();
-            $sansImpression->setCommande($commande);
+
+            $commande->setAvecImpression($avecImpression);
+            $commandeRepository->add($commande, true);
+        } else {
+            $sansImpression = new SansImpression();
             $sansImpression->setEtape('etape_1');
             $sansImpression->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
             $sansImpression->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
@@ -269,7 +269,8 @@ class ApiCommandeController extends ApiInterface
             $sansImpression->setUpdatedAt(new DateTime());
 
             $sansImpressionRepository->add($sansImpression, true);
-
+            $commande->setSansImpression($sansImpression);
+            $commandeRepository->add($commande, true);
         }
 
         return $this->responseData($commande, 'group1', ['Content-Type' => 'application/json']);
