@@ -19,7 +19,7 @@ class AvecImpression
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Group(["fichier", "group1","group_commande"])]
+    #[Group(["group_commande"])]
     private ?int $id = null;
 
 
@@ -38,7 +38,7 @@ class AvecImpression
 
 
     #[ORM\Column(nullable: true)]
-    #[Group(["fichier", "group1","group_commande"])]
+    #[Group(["group_commande"])]
     private ?\DateTime $dateImpressionBat = null;
 
  
@@ -46,105 +46,105 @@ class AvecImpression
     //etape 3
 
     #[ORM\Column(nullable: true)]
-    #[Group(["fichier", "group1","group_commande"])]
+    #[Group(["group_commande"])]
     private ?\DateTime $DateValidationBat = null;
 
     
     //ETAPE 4
 
     #[ORM\Column(nullable: true)]
-    #[Group(["fichier", "group1","group_commande"])]
+    #[Group(["group_commande"])]
     private ?\DateTime $dateImpressionvisuelle = null;
 
    
     //ETAPE 5
-    #[Group(["fichier", "group1","group_commande"])]
+    #[Group(["group_commande"])]
     #[ORM\Column(nullable: true)]
     private ?\DateTime $dateProgrammationPose = null;
 
 
     #[ORM\Column(nullable: true)]
-    #[Group(["fichier", "group1","group_commande"])]
+    #[Group(["group_commande"])]
     private ?\DateTime $dateDebutPose = null;
 
     #[ORM\Column(nullable: true)]
-    #[Group(["fichier", "group1","group_commande"])]
+    #[Group(["group_commande"])]
     private ?\DateTime $dateFinPose = null;
 
     #[ORM\Column(nullable: true)]
-    #[Group(["fichier", "group1","group_commande"])]
+    #[Group(["group_commande"])]
     private ?\DateTime $dateDebutAlerte = null;
 
     //ETAPE 6
 
     #[ORM\Column(nullable: true)]
-    #[Group(["fichier", "group1","group_commande"])]
+    #[Group(["group_commande"])]
     private ?\DateTime $dateRapportPose = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Group(["fichier", "group1","group_commande"])]
+    #[Group(["group_commande"])]
     private ?string $commentairePose = null;
 
    //ETAPE 7
 
     #[ORM\ManyToOne(cascade: ["persist"], fetch: "EAGER")]
     #[ORM\JoinColumn(nullable: true)]
-    #[Group(["fichier", "group1",'group_commande'])]
+    #[Group(['group_commande'])]
     private ?Fichier $rapportDepose = null;
 
     #[ORM\Column(nullable: true)]
-    #[Group(["fichier", "group1","group_commande"])]
+    #[Group(["group_commande"])]
     private ?\DateTime $dateRapportDepose = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Group(["fichier", "group1","group_commande"])]
+    #[Group(["group_commande"])]
     private ?string $commentaireDepose = null;
 
 //ETAPE 8
 
     #[ORM\Column(nullable: true)]
-    #[Group(["fichier", "group1","group_commande"])]
+    #[Group(["group_commande"])]
     private ?\DateTime $dateFinalisation = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Group(["fichier", "group1","group_commande"])]
+    #[Group(["group_commande"])]
     private ?string $commentaireFinalisation = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Group(["group1","group_commande"])]
+    #[Group(["group_commande"])]
     private ?string $etape = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Group(["fichier", "group1","group_commande"])]
+    #[Group(["group_commande"])]
     private ?string $commentaireEnvoiVisuel = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Group(["fichier", "group1","group_commande"])]
+    #[Group(["group_commande"])]
     private ?string $commentaireImpressionBat = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Group(["fichier", "group1","group_commande"])]
+    #[Group(["group_commande"])]
     private ?string $commentaireValidationBat = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Group(["fichier", "group1","group_commande"])]
+    #[Group(["group_commande"])]
     private ?string $commentaireImpressionVisuelle = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Group(["fichier", "group1","group_commande"])]
+    #[Group(["group_commande"])]
     private ?string $commentaireProgrammationPose = null;
 
    
     #[ORM\ManyToOne(cascade: ["persist"], fetch: "EAGER")]
     #[ORM\JoinColumn(nullable: true)]
-    #[Group(["fichier", "group1","group_commande"])]
+    #[Group(["group_commande"])]
     private ?Fichier $imageImpressionVisuelle = null;
 
    
 
     #[ORM\ManyToOne(cascade: ["persist"], fetch: "EAGER")]
     #[ORM\JoinColumn(nullable: true)]
-    #[Group(["fichier", "group1","group_commande"])]
+    #[Group(["fichier","group_commande"])]
     private ?Fichier $rapportPoseDocument = null;
 
     /**
