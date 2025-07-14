@@ -38,7 +38,7 @@ class AvecImpression
 
 
     #[ORM\Column(nullable: true)]
-    #[Group(["group_commande"])]
+    //#[Group(["group_commande"])]
     private ?\DateTime $dateImpressionBat = null;
 
  
