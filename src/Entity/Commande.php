@@ -103,7 +103,7 @@ class Commande
 
     #[ORM\ManyToOne(inversedBy: 'commandes')]
     #[Group(["group1","group_commande"])]
-    private ?sansImpression $sansImpression = null;
+    private ?SansImpression $sansImpression = null;
 
 
     public function __construct()
