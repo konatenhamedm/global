@@ -54,7 +54,7 @@ class SansImpression
 
     #[ORM\ManyToOne(cascade: ["persist"], fetch: "EAGER")]
     #[ORM\JoinColumn(nullable: true)]
-    #[Group(["fichier", "group1","group_commande"])]
+    #[Group(["fichier"])]
     private ?Fichier $rapportPoseImage = null;
 
     #[ORM\Column(nullable: true)]
