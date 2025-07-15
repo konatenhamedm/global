@@ -79,17 +79,17 @@ class SansImpression
     private ?\DateTime $dateRapportDepose = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Group(["fichier", "group1","group_commande"])]
+    #[Group([ "group1","group_commande"])]
     private ?string $commentaireRapportDepose = null;
 
     // ETAPE FINALISATION   bbb
 
     #[ORM\Column(nullable: true)]
-    #[Group(["fichier", "group1","group_commande"])]
+    #[Group([ "group1","group_commande"])]
     private ?\DateTime $dateFinalisation = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Group(["fichier", "group1","group_commande"])]
+    #[Group(["group1","group_commande"])]
     private ?string $commentaireFinalisation = null;
 
     #[ORM\Column(length: 255)]

@@ -89,7 +89,7 @@ class AvecImpression
 
     #[ORM\ManyToOne(cascade: ["persist"], fetch: "EAGER")]
     #[ORM\JoinColumn(nullable: true)]
-    #[Group(['group_commande'])]
+    #[Group(["fichier",'group_commande'])]
     private ?Fichier $rapportDepose = null;
 
     #[ORM\Column(nullable: true)]
@@ -137,7 +137,7 @@ class AvecImpression
    
     #[ORM\ManyToOne(cascade: ["persist"], fetch: "EAGER")]
     #[ORM\JoinColumn(nullable: true)]
-    #[Group(["group_commande"])]
+    #[Group(["fichier","group_commande"])]
     private ?Fichier $imageImpressionVisuelle = null;
 
    
