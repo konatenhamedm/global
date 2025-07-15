@@ -50,13 +50,18 @@ class SansImpression
 
     // ETAPE RAPPORT DEPOSE
 
-    #[ORM\Column(length: 255, nullable: true)]
+
+
+    #[ORM\ManyToOne(cascade: ["persist"], fetch: "EAGER")]
+    #[ORM\JoinColumn(nullable: true)]
     #[Group(["fichier", "group1","group_commande"])]
-    private ?string $rapportPoseImage = null;
+    private ?Fichier $rapportPoseImage = null;
 
     #[ORM\Column(nullable: true)]
     #[Group(["fichier", "group1","group_commande"])]
     private ?\DateTime $dateRapportPose = null;
+
+    
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Group(["fichier", "group1","group_commande"])]
@@ -64,9 +69,10 @@ class SansImpression
 
     // ETAPE RAPPORT DEPOSE
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\ManyToOne(cascade: ["persist"], fetch: "EAGER")]
+    #[ORM\JoinColumn(nullable: true)]
     #[Group(["fichier", "group1","group_commande"])]
-    private ?string $rapportDepose = null;
+    private ?Fichier $rapportDepose = null;
 
     #[ORM\Column(nullable: true)]
     #[Group(["fichier", "group1","group_commande"])]
@@ -168,12 +174,12 @@ class SansImpression
         return $this;
     }
 
-    public function getRapportPoseImage(): ?string
+    public function getRapportPoseImage(): ?Fichier
     {
         return $this->rapportPoseImage;
     }
 
-    public function setRapportPoseImage(?string $rapportPoseImage): static
+    public function setRapportPoseImage(?Fichier $rapportPoseImage): static
     {
         $this->rapportPoseImage = $rapportPoseImage;
 
@@ -204,12 +210,12 @@ class SansImpression
         return $this;
     }
 
-    public function getRapportDepose(): ?string
+    public function getRapportDepose(): ?Fichier
     {
         return $this->rapportDepose;
     }
 
-    public function setRapportDepose(?string $rapportDepose): static
+    public function setRapportDepose(?Fichier $rapportDepose): static
     {
         $this->rapportDepose = $rapportDepose;
 
