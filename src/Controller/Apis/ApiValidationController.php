@@ -205,7 +205,7 @@ class ApiValidationController extends ApiInterface
 
 
 
-    #[Route('/avec/impression', methods: ['GET'])]
+    #[Route('/avec/impression', methods: ['POST'])]
     /**
      * Permet de valider avec impression.
      */

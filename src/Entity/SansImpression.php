@@ -28,9 +28,11 @@ class SansImpression
     #[Group(["fichier", "group1","group_commande"])]
     private ?\DateTime $dateEnvoiBache = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+
+    #[ORM\ManyToOne(cascade: ["persist"], fetch: "EAGER")]
+    #[ORM\JoinColumn(nullable: true)]
     #[Group(["fichier", "group1","group_commande"])]
-    private ?string $visualBache = null;
+    private ?Fichier $visualBache = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Group(["fichier", "group1","group_commande"])]
@@ -118,12 +120,12 @@ class SansImpression
         return $this;
     }
 
-    public function getVisualBache(): ?string
+    public function getVisualBache(): ?Fichier
     {
         return $this->visualBache;
     }
 
-    public function setVisualBache(?string $visualBache): static
+    public function setVisualBache(?Fichier $visualBache): static
     {
         $this->visualBache = $visualBache;
 
