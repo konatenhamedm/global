@@ -260,12 +260,12 @@ class AvecImpression
 
     
 
-    public function getRapportDepose(): ?string
+    public function getRapportDepose(): ?Fichier
     {
         return $this->rapportDepose;
     }
 
-    public function setRapportDepose(?string $rapportDepose): static
+    public function setRapportDepose(?Fichier $rapportDepose): static
     {
         $this->rapportDepose = $rapportDepose;
 
