@@ -46,7 +46,7 @@ class SansImpression
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Group(["fichier", "group1","group_commande"])]
-    private ?string $commentaireProgrammationpose = null;
+    private ?string $commentaireProgrammationPose = null;
 
     // ETAPE RAPPORT DEPOSE
 
@@ -162,14 +162,14 @@ class SansImpression
         return $this;
     }
 
-    public function getCommentaireProgrammationpose(): ?string
+    public function getCommentaireProgrammationPose(): ?string
     {
-        return $this->commentaireProgrammationpose;
+        return $this->commentaireProgrammationPose;
     }
 
-    public function setCommentaireProgrammationpose(?string $commentaireProgrammationpose): static
+    public function setCommentaireProgrammationPose(?string $commentaireProgrammationPose): static
     {
-        $this->commentaireProgrammationpose = $commentaireProgrammationpose;
+        $this->commentaireProgrammationPose = $commentaireProgrammationPose;
 
         return $this;
     }

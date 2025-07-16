@@ -47,7 +47,7 @@ class AvecImpression
 
     #[ORM\Column(nullable: true)]
     #[Group(["group_commande"])]
-    private ?\DateTime $DateValidationBat = null;
+    private ?\DateTime $dateValidationBat = null;
 
     
     //ETAPE 4
@@ -209,12 +209,12 @@ class AvecImpression
 
     public function getDateValidationBat(): ?\DateTime
     {
-        return $this->DateValidationBat;
+        return $this->dateValidationBat;
     }
 
-    public function setDateValidationBat(?\DateTime $DateValidationBat): static
+    public function setDateValidationBat(?\DateTime $dateValidationBat): static
     {
-        $this->DateValidationBat = $DateValidationBat;
+        $this->dateValidationBat = $dateValidationBat;
 
         return $this;
     }
