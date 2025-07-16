@@ -416,7 +416,7 @@ class ApiValidationController extends ApiInterface
 
                         //ETAPE 2
                         new OA\Property(property: "dateProgrammationPose", type: "date"),
-                        new OA\Property(property: "commentaireProgrammationpose", type: "string"),
+                        new OA\Property(property: "commentaireProgrammationPose", type: "string"),
 
                         //ETAPE 3
 
@@ -482,7 +482,7 @@ class ApiValidationController extends ApiInterface
 
                 case 'etape_2':
                     $sansImpression->setDateProgrammationPose(new \DateTime($request->get('dateProgrammationPose')));
-                    $sansImpression->setCommentaireProgrammationpose($request->get('commentaireProgrammationpose'));
+                    $sansImpression->setCommentaireProgrammationpose($request->get('commentaireProgrammationPose'));
                     $sansImpression->setEtape("etape_3");
                     break;
 
