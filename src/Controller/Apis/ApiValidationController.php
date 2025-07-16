@@ -248,7 +248,7 @@ class ApiValidationController extends ApiInterface
 
                         new OA\Property(property: "rapportDepose", type: "string", format: "binary"),
                         new OA\Property(property: "dateRapportDepose", type: "date"),
-                        new OA\Property(property: "commentaireDepose", type: "string"),
+                        new OA\Property(property: "commentaireRapportDepose", type: "string"),
 
 
                         new OA\Property(property: "dateFinalisation", type: "date"),
@@ -349,7 +349,7 @@ class ApiValidationController extends ApiInterface
 
                 case 'etape_7':
                     $avecImpression->setDateRapportDepose(new \DateTime($request->get('dateRapportDepose')));
-                    $avecImpression->setCommentaireDepose($request->get('commentaireDepose'));
+                    $avecImpression->setCommentaireRapportDepose($request->get('commentaireRapportDepose'));
                     $this->updateFile($request->files->get('rapportDepose'), $filePath, $filePrefix, function ($fichier) use ($avecImpression) {
                         $avecImpression->setRapportDepose($fichier);
                     });

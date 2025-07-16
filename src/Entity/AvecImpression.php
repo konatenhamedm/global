@@ -98,7 +98,7 @@ class AvecImpression
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Group(["group_commande"])]
-    private ?string $commentaireDepose = null;
+    private ?string $commentaireRapportDepose = null;
 
 //ETAPE 8
 
@@ -345,14 +345,14 @@ class AvecImpression
         return $this;
     }
 
-    public function getCommentaireDepose(): ?string
+    public function getCommentaireRapportDepose(): ?string
     {
-        return $this->commentaireDepose;
+        return $this->commentaireRapportDepose;
     }
 
-    public function setCommentaireDepose(?string $commentaireDepose): static
+    public function setCommentaireRapportDepose(?string $commentaireRapportDepose): static
     {
-        $this->commentaireDepose = $commentaireDepose;
+        $this->commentaireRapportDepose = $commentaireRapportDepose;
 
         return $this;
     }
