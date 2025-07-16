@@ -220,6 +220,7 @@ class ApiCommandeController extends ApiInterface
         if ($errorResponse !== null) {
             return $errorResponse;
         }
+        $commandeRepository->add($commande, false);
 
         $somme = 0;
         $lignes = $request->get('lignes');

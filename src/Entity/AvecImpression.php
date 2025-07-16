@@ -38,7 +38,7 @@ class AvecImpression
 
 
     #[ORM\Column(nullable: true)]
-    //#[Group(["group_commande"])]
+    #[Group(["group1","group_commande"])]
     private ?\DateTime $dateImpressionBat = null;
 
  
@@ -193,7 +193,7 @@ class AvecImpression
 
    
 
-    public function getDateImpressionBta(): ?\DateTime
+    public function getDateImpressionBat(): ?\DateTime
     {
         return $this->dateImpressionBat;
     }
