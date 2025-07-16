@@ -55,7 +55,7 @@ class SansImpression
     #[ORM\ManyToOne(cascade: ["persist"], fetch: "EAGER")]
     #[ORM\JoinColumn(nullable: true)]
     #[Group(["fichier", "group1","group_commande"])]
-    private ?Fichier $rapportPoseImage = null;
+    private ?Fichier $rapportPose = null;
 
     #[ORM\Column(nullable: true)]
     #[Group(["fichier", "group1","group_commande"])]
@@ -174,14 +174,14 @@ class SansImpression
         return $this;
     }
 
-    public function getRapportPoseImage(): ?Fichier
+    public function getRapportPose(): ?Fichier
     {
-        return $this->rapportPoseImage;
+        return $this->rapportPose;
     }
 
-    public function setRapportPoseImage(?Fichier $rapportPoseImage): static
+    public function setRapportPose(?Fichier $rapportPose): static
     {
-        $this->rapportPoseImage = $rapportPoseImage;
+        $this->rapportPose = $rapportPose;
 
         return $this;
     }

@@ -145,7 +145,7 @@ class AvecImpression
     #[ORM\ManyToOne(cascade: ["persist"], fetch: "EAGER")]
     #[ORM\JoinColumn(nullable: true)]
     #[Group(["fichier","group_commande"])]
-    private ?Fichier $rapportPoseDocument = null;
+    private ?Fichier $rapportPose = null;
 
     /**
      * @var Collection<int, Commande>
@@ -454,14 +454,14 @@ class AvecImpression
         return $this;
     }
 
-    public function getRapportPoseDocument(): ?string
+    public function getRapportPose(): ?string
     {
-        return $this->rapportPoseDocument;
+        return $this->rapportPose;
     }
 
-    public function setRapportPoseDocument(?string $rapportPoseDocument): static
+    public function setRapportPose(?string $rapportPose): static
     {
-        $this->rapportPoseDocument = $rapportPoseDocument;
+        $this->rapportPose = $rapportPose;
 
         return $this;
     }

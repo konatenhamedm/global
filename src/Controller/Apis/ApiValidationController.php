@@ -243,7 +243,7 @@ class ApiValidationController extends ApiInterface
 
                         new OA\Property(property: "dateRapportPose", type: "date"),
                         new OA\Property(property: "commentairePose", type: "string"),
-                        new OA\Property(property: "rapportPoseDocument", type: "string", format: "binary"),
+                        new OA\Property(property: "rapportPose", type: "string", format: "binary"),
 
 
                         new OA\Property(property: "rapportDepose", type: "string", format: "binary"),
@@ -340,8 +340,8 @@ class ApiValidationController extends ApiInterface
                 case 'etape_6':
                     $avecImpression->setDateRapportPose(new \DateTime($request->get('dateRapportPose')));
                     $avecImpression->setCommentairePose($request->get('commentairePose'));
-                    $this->updateFile($request->files->get('rapportPoseDocument'), $filePath, $filePrefix, function ($fichier) use ($avecImpression) {
-                        $avecImpression->setRapportPoseDocument($fichier);
+                    $this->updateFile($request->files->get('rapportPose'), $filePath, $filePrefix, function ($fichier) use ($avecImpression) {
+                        $avecImpression->setRapportPose($fichier);
                     });
                     $avecImpression->setEtape("etape_7");
 
@@ -422,7 +422,7 @@ class ApiValidationController extends ApiInterface
 
                         new OA\Property(property: "dateRapportPose", type: "date"),
                         new OA\Property(property: "commentRapportPose", type: "string"),
-                        new OA\Property(property: "rapportPoseImage", type: "string", format: "binary"),
+                        new OA\Property(property: "rapportPose", type: "string", format: "binary"),
 
                         //ETAPE 4
 
@@ -489,8 +489,8 @@ class ApiValidationController extends ApiInterface
                 case 'etape_3':
                     $sansImpression->setDateRapportPose(new \DateTime($request->get('dateRapportPose')));
                     $sansImpression->setCommentRapportPose($request->get('commentRapportPose'));
-                    $this->updateFile($request->files->get('rapportPoseImage'), $filePath, $filePrefix, function ($fichier) use ($sansImpression) {
-                        $sansImpression->setRapportPoseImage($fichier);
+                    $this->updateFile($request->files->get('rapportPose'), $filePath, $filePrefix, function ($fichier) use ($sansImpression) {
+                        $sansImpression->setRapportPose($fichier);
                     });
                     $sansImpression->setEtape("etape_4");
                     break;
