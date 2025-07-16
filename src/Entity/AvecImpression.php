@@ -454,12 +454,12 @@ class AvecImpression
         return $this;
     }
 
-    public function getRapportPose(): ?string
+    public function getRapportPose(): ?Fichier
     {
         return $this->rapportPose;
     }
 
-    public function setRapportPose(?string $rapportPose): static
+    public function setRapportPose(?Fichier $rapportPose): static
     {
         $this->rapportPose = $rapportPose;
 
