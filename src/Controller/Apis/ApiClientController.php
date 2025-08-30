@@ -124,7 +124,7 @@ class ApiClientController extends ApiInterface
 
                     new OA\Property(property: "denomination", type: "string"),
                     new OA\Property(property: "compteContribuable", type: "string"),
-                    new OA\Property(property: "adresse", type: "string"),
+                    new OA\Property(property: "addresse", type: "string"),
                     new OA\Property(property: "telComptabilite", type: "string"),
                     new OA\Property(property: "emailComptabilite", type: "string"),
                     new OA\Property(property: "nomStructureFacture", type: "string"),
@@ -154,7 +154,7 @@ class ApiClientController extends ApiInterface
         $type = $typeClientRepository->findOneBy(['code'=> $request->get('type')])->getCode();
 
         if($type == "individual"){
-            $client->setTypeClient($typeClientRepository->find($request->get('type')));
+            $client->setTypeClient($type);
             $client->setNom($request->get('nom'));
             $client->setPrenoms($request->get('prenoms'));
             $client->setContact($request->get('contact'));
@@ -162,10 +162,10 @@ class ApiClientController extends ApiInterface
 
 
         }else{
-            $client->setTypeClient($typeClientRepository->find($request->get('type')));
+            $client->setTypeClient($type);
             $client->setDenomination($request->get('denomination'));
             $client->setCompteContribuable($request->get('compteContribuable'));
-            $client->setAdresse($request->get('adresse'));
+            $client->setAdresse($request->get('addresse'));
             $client->setTelComptabilite($request->get('telComptabilite'));
             $client->setEmailComptabilite($request->get('emailComptabilite'));
             $client->setNomStructureFacture($request->get('nomStructureFacture'));

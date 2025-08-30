@@ -5,11 +5,13 @@ namespace  App\Controller\Apis;
 use App\Controller\Apis\Config\ApiInterface;
 use App\DTO\PanneauDTO;
 use App\Entity\Face;
+use App\Entity\Ligne;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Entity\Panneau;
 use App\Entity\SousType;
 use App\Entity\Substrat;
 use App\Repository\IlluminationRepository;
+use App\Repository\LigneRepository;
 use App\Repository\LocaliteRepository;
 use App\Repository\OrientationRepository;
 use App\Repository\PanneauRepository;
@@ -71,6 +73,102 @@ class ApiPanneauController extends ApiInterface
         return $response;
     }
 
+    #[Route('/panneau/libre', methods: ['GET'])]
+    /**
+     * Retourne la liste des panneaus.
+     * 
+     */
+    #[OA\Response(
+        response: 200,
+        description: 'Returns the rewards of a user',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(ref: new Model(type: Panneau::class, groups: ['full']))
+        )
+    )]
+    #[OA\Tag(name: 'panneau')]
+    // #[Security(name: 'Bearer')]
+    public function listePanneauxLibre(
+        PanneauRepository $panneauRepository,
+        LigneRepository $ligneRepository
+    ): Response {
+        try {
+            $panneaux = $panneauRepository->findAll();
+
+            $data = array_map(function (Panneau $panneau) use ($ligneRepository) {
+                return [
+                    'id' => $panneau->getId(),
+                    'code' => $panneau->getCode(),
+                    'gpsLong' => $panneau->getGpsLong(),
+                    'gpsLat' => $panneau->getGpsLat(),
+                    'type' => [
+                        'id' => $panneau->getType()->getId(),
+                        'libelle' => $panneau->getType()->getLibelle(),
+                    ],
+                    'sousType' => [
+                        'id' => $panneau->getSousType()->getId(),
+                        'libelle' => $panneau->getSousType()->getLibelle(),
+                    ],
+                    'taille' => [
+                        'id' => $panneau->getTaille()->getId(),
+                        'libelle' => $panneau->getTaille()->getDimension(),
+                    ],
+                    'localite' => [
+                        'id' => $panneau->getLocalite()->getId(),
+                        'libelle' => $panneau->getLocalite()->getLibelle(),
+                    ],
+                    'superficie' => [
+                        'id' => $panneau->getSuperficie()->getId(),
+                        'libelle' => $panneau->getSuperficie()->getLibelle(),
+                    ],
+                    'orientation' => [
+                        'id' => $panneau->getOrientation()->getId(),
+                        'libelle' => $panneau->getOrientation()->getLibelle(),
+                    ],
+                    'substrat' => [
+                        'id' => $panneau->getSubstrat()->getId(),
+                        'libelle' => $panneau->getSubstrat()->getLibelle(),
+                    ],
+                    'faces' => array_map(function (Face $face) use ($ligneRepository) {
+                        $activeLignes = $ligneRepository->findActiveByFace($face->getId());
+
+                        return [
+                            'id' => $face->getId(),
+                            'numFace' => $face->getNumFace(),
+                            'etat' => $face->getEtat(),
+                            'code' => $face->getCode(),
+                            'prix' => $face->getPrix(),
+                            'imagePrincipale' => [
+                                'alt' => $face->getImagePrincipale() ? $face->getImagePrincipale()->getAlt() : '',
+                                'path' => $face->getImagePrincipale() ? $face->getImagePrincipale()->getPath() : '',
+                            ],
+                            'allReservationsEnCours' => array_map(function (Ligne $ligne) {
+                                return [
+                                    'dateDebut' => $ligne->getDateDebut()->format('Y-m-d'),
+                                    'dateFin'   => $ligne->getDateFin()->format('Y-m-d'),
+                                ];
+                            }, $activeLignes),
+                        ];
+                    }, $panneau->getFaces()->toArray()),
+                    'specification' => [
+                        'id' => $panneau->getSpecification()->getId(),
+                        'libelle' => $panneau->getSpecification()->getLibelle(),
+                    ],
+                    'zone' => $panneau->getZone(),
+                    'localisation' => $panneau->getLocalisation(),
+                ];
+            }, $panneaux);
+
+            $response = $this->responseData($data, 'group1', ['Content-Type' => 'application/json']);
+        } catch (\Exception $exception) {
+            $this->setMessage($exception->getMessage()); // utile pour debug
+            $response = $this->response('[]');
+        }
+
+        return $response;
+    }
+
+
 
     #[Route('/get/one/{id}', methods: ['GET'])]
     /**
@@ -130,15 +228,14 @@ class ApiPanneauController extends ApiInterface
     )]
     #[OA\Tag(name: 'panneau')]
     //#[Security(name: 'Bearer')]
-    public function getOneByCode(PanneauRepository $panneauRepository,$code)
+    public function getOneByCode(PanneauRepository $panneauRepository, $code)
     {
         try {
 
             $panneau = $panneauRepository->findOneBy(['code' => $code]);
             if ($panneau) {
-               // $response = $this->response($panneau);
-            $response =  $this->responseData($panneau, 'group1', ['Content-Type' => 'application/json']);
-
+                // $response = $this->response($panneau);
+                $response =  $this->responseData($panneau, 'group1', ['Content-Type' => 'application/json']);
             } else {
                 $this->setMessage('Cette ressource est inexistante');
                 $this->setStatusCode(300);
@@ -178,6 +275,8 @@ class ApiPanneauController extends ApiInterface
                         new OA\Property(property: "taille", type: "string"),
                         new OA\Property(property: "superficie", type: "string"),
                         new OA\Property(property: "orientation", type: "string"),
+                        new OA\Property(property: "localisation", type: "string"),
+                        new OA\Property(property: "zone", type: "string"),
                         new OA\Property(property: "code", type: "string"),
                         new OA\Property(property: "userUpdate", type: "string"),
 
@@ -248,6 +347,8 @@ class ApiPanneauController extends ApiInterface
             $panneau->setSuperficie($superficieRepository->find($request->get('superficie')));
             $panneau->setOrientation($orientationRepository->find($request->get('orientation')));
             $panneau->setCode($request->get('code'));
+            $panneau->setZone($request->get('zone'));
+            $panneau->setLocalisation($request->get('localisation'));
             $panneau->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
             $panneau->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
             $panneau->setCreatedAtValue(new DateTime());
@@ -306,7 +407,7 @@ class ApiPanneauController extends ApiInterface
 
 
             $errorResponse = $this->errorResponse($panneau);
-          //  dd($errorResponse);
+            //  dd($errorResponse);
             if ($errorResponse !== null) {
                 return $errorResponse; // Retourne la réponse d'erreur si des erreurs sont présentes
             } else {
@@ -315,7 +416,7 @@ class ApiPanneauController extends ApiInterface
             }
         } catch (\Throwable $th) {
             return $this->respondBadRequest(
-               [
+                [
                     'message' => 'Une erreur est survenue lors de la création du panneau.',
                     'error' => $th->getMessage()
                 ]
@@ -392,6 +493,8 @@ class ApiPanneauController extends ApiInterface
                 $panneau->setTaille($tailleRepository->find($request->get('taille')));
                 $panneau->setSuperficie($superficieRepository->find($request->get('superficie')));
                 $panneau->setOrientation($orientationRepository->find($request->get('orientation')));
+                $panneau->setZone($request->get('zone'));
+                $panneau->setLocalisation($request->get('localisation'));
 
                 $panneau->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
                 $panneau->setUpdatedAt(new \DateTime());

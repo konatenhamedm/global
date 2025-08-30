@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\PanneauRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups as Group;
 
@@ -74,6 +75,14 @@ class Panneau
     #[ORM\ManyToOne(inversedBy: 'panneaus')]
     #[Group(["group1","group_commande"])]
     private ?Specification $specification = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Group(["group1"])]
+    private ?string $zone = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Group(["group1"])]
+    private ?string $localisation = null;
 
     public function __construct()
     {
@@ -255,6 +264,30 @@ class Panneau
     public function setSpecification(?Specification $specification): static
     {
         $this->specification = $specification;
+
+        return $this;
+    }
+
+    public function getZone(): ?string
+    {
+        return $this->zone;
+    }
+
+    public function setZone(?string $zone): static
+    {
+        $this->zone = $zone;
+
+        return $this;
+    }
+
+    public function getLocalisation(): ?string
+    {
+        return $this->localisation;
+    }
+
+    public function setLocalisation(?string $localisation): static
+    {
+        $this->localisation = $localisation;
 
         return $this;
     }
