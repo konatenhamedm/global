@@ -76,13 +76,15 @@ class Panneau
     #[Group(["group1","group_commande"])]
     private ?Specification $specification = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    #[Group(["group1"])]
-    private ?string $zone = null;
+  
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Group(["group1"])]
     private ?string $localisation = null;
+
+    #[ORM\ManyToOne(inversedBy: 'panneaus')]
+    #[Group(["group1"])]
+    private ?Zone $zone = null;
 
     public function __construct()
     {
@@ -268,17 +270,6 @@ class Panneau
         return $this;
     }
 
-    public function getZone(): ?string
-    {
-        return $this->zone;
-    }
-
-    public function setZone(?string $zone): static
-    {
-        $this->zone = $zone;
-
-        return $this;
-    }
 
     public function getLocalisation(): ?string
     {
@@ -288,6 +279,18 @@ class Panneau
     public function setLocalisation(?string $localisation): static
     {
         $this->localisation = $localisation;
+
+        return $this;
+    }
+
+    public function getZone(): ?Zone
+    {
+        return $this->zone;
+    }
+
+    public function setZone(?Zone $zone): static
+    {
+        $this->zone = $zone;
 
         return $this;
     }

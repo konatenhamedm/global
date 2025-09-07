@@ -9,6 +9,7 @@ parameters:
     mail_dsn: '%env(MAILER_DSN)%'
     API_KEY: '%env(API_KEY)%'
 
+
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -23,7 +24,7 @@ services:
     App\EventListener\CorsListener:
             tags:
                 - { name: kernel.event_listener, event: kernel.response, method: onKernelResponse }
-        
+    
         
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
