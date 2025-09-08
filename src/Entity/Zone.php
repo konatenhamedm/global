@@ -10,7 +10,7 @@ use Symfony\Component\Serializer\Annotation\Groups as Group;
 
 #[ORM\Entity(repositoryClass: ZoneRepository::class)]
 class Zone
-{
+{ use TraitEntity;
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
