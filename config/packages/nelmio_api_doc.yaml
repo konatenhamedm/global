@@ -1,9 +1,9 @@
 nelmio_api_doc:
     documentation:
         servers:
-          - url: http://127.0.0.1:8000/
+          - url: https://back.globaloutdoor.ci
             description: API over HTTP
-          - url: http://127.0.0.1:8000/
+          - url: https://back.globaloutdoor.ci
             description: API over HTTPS
         info:
             title: GLOBAL 
