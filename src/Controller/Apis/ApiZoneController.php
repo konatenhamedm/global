@@ -125,10 +125,14 @@ class ApiZoneController extends ApiInterface
     {
         $libelle = $request->request->get('libelle');
         $code = $request->request->get('code');
+        $zoom = $request->request->get('zoom');
+        $centre = $request->request->get('centre');
         $userUpdate = $request->request->get('userUpdate');
 
         $zone = new Zone();
         $zone->setLibelle($libelle);
+        $zone->setZoom($zoom);
+        $zone->setCentre($centre);
         $zone->setCode($code);
         $zone->setCreatedBy($this->userRepository->find($userUpdate));
         $zone->setUpdatedBy($this->userRepository->find($userUpdate));
@@ -176,11 +180,15 @@ class ApiZoneController extends ApiInterface
         try {
             $libelle = $request->request->get('libelle');
             $code = $request->request->get('code');
+            $zoom = $request->request->get('zoom');
+            $centre = $request->request->get('centre');
             $userUpdate = $request->request->get('userUpdate');
 
             if ($zone !== null) {
                 $zone->setLibelle($libelle);
                 $zone->setCode($code);
+                $zone->setCentre($centre);
+                $zone->setZoom($zoom);
                 $zone->setUpdatedBy($this->userRepository->find($userUpdate));
                 $zone->setUpdatedAt(new \DateTime());
 

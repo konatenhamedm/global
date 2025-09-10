@@ -31,6 +31,14 @@ class Zone
     #[ORM\OneToMany(targetEntity: Panneau::class, mappedBy: 'zone')]
     private Collection $panneaus;
 
+    #[ORM\Column(length: 255)]
+    #[Group(["group1"])]
+    private ?string $centre = null;
+
+    #[ORM\Column(length: 255)]
+    #[Group(["group1"])]
+    private ?string $zoom = null;
+
     public function __construct()
     {
         $this->panneaus = new ArrayCollection();
@@ -91,6 +99,30 @@ class Zone
                 $panneau->setZone(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCentre(): ?string
+    {
+        return $this->centre;
+    }
+
+    public function setCentre(string $centre): static
+    {
+        $this->centre = $centre;
+
+        return $this;
+    }
+
+    public function getZoom(): ?string
+    {
+        return $this->zoom;
+    }
+
+    public function setZoom(string $zoom): static
+    {
+        $this->zoom = $zoom;
 
         return $this;
     }

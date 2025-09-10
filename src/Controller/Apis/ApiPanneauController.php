@@ -73,7 +73,7 @@ class ApiPanneauController extends ApiInterface
         return $response;
     }
 
-    #[Route('/panneau/libre', methods: ['GET'])]
+    #[Route('/panneau/utilises', methods: ['GET'])]
     /**
      * Retourne la liste des panneaus.
      * 
