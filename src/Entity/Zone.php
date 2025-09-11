@@ -38,9 +38,11 @@ class Zone
     private ?string $zoom = null;
 
     #[ORM\Column(length: 255)]
+    #[Group(["group1"])]
     private ?string $centreLat = null;
 
     #[ORM\Column(length: 255)]
+    #[Group(["group1"])]
     private ?string $centreLng = null;
 
     public function __construct()
