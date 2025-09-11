@@ -31,13 +31,17 @@ class Zone
     #[ORM\OneToMany(targetEntity: Panneau::class, mappedBy: 'zone')]
     private Collection $panneaus;
 
-    #[ORM\Column(length: 255)]
-    #[Group(["group1"])]
-    private ?string $centre = null;
+ 
 
     #[ORM\Column(length: 255)]
     #[Group(["group1"])]
     private ?string $zoom = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $centreLat = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $centreLng = null;
 
     public function __construct()
     {
@@ -103,17 +107,7 @@ class Zone
         return $this;
     }
 
-    public function getCentre(): ?string
-    {
-        return $this->centre;
-    }
 
-    public function setCentre(string $centre): static
-    {
-        $this->centre = $centre;
-
-        return $this;
-    }
 
     public function getZoom(): ?string
     {
@@ -123,6 +117,30 @@ class Zone
     public function setZoom(string $zoom): static
     {
         $this->zoom = $zoom;
+
+        return $this;
+    }
+
+    public function getCentreLat(): ?string
+    {
+        return $this->centreLat;
+    }
+
+    public function setCentreLat(string $centreLat): static
+    {
+        $this->centreLat = $centreLat;
+
+        return $this;
+    }
+
+    public function getCentreLng(): ?string
+    {
+        return $this->centreLng;
+    }
+
+    public function setCentreLng(string $centreLng): static
+    {
+        $this->centreLng = $centreLng;
 
         return $this;
     }
