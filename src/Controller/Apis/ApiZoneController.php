@@ -111,6 +111,8 @@ class ApiZoneController extends ApiInterface
                     properties: [
                         new OA\Property(property: "libelle", type: "string"),
                         new OA\Property(property: "code", type: "string"),
+                        new OA\Property(property: "centreLat", type: "string"),
+                        new OA\Property(property: "centreLng", type: "string"),
                         new OA\Property(property: "userUpdate", type: "string"),
                     ]
                 )
@@ -126,13 +128,15 @@ class ApiZoneController extends ApiInterface
         $libelle = $request->request->get('libelle');
         $code = $request->request->get('code');
         $zoom = $request->request->get('zoom');
-        $centre = $request->request->get('centre');
+        $centreLat = $request->request->get('centreLat');
+        $centreLng = $request->request->get('centreLng');
         $userUpdate = $request->request->get('userUpdate');
 
         $zone = new Zone();
         $zone->setLibelle($libelle);
         $zone->setZoom($zoom);
-        $zone->setCentre($centre);
+        $zone->setCentreLat($centreLat);
+        $zone->setCentreLng($centreLng);
         $zone->setCode($code);
         $zone->setCreatedBy($this->userRepository->find($userUpdate));
         $zone->setUpdatedBy($this->userRepository->find($userUpdate));
@@ -165,6 +169,8 @@ class ApiZoneController extends ApiInterface
                     properties: [
                         new OA\Property(property: "libelle", type: "string"),
                         new OA\Property(property: "code", type: "string"),
+                        new OA\Property(property: "centreLat", type: "string"),
+                        new OA\Property(property: "centreLng", type: "string"),
                         new OA\Property(property: "userUpdate", type: "string"),
                     ]
                 )
@@ -181,13 +187,15 @@ class ApiZoneController extends ApiInterface
             $libelle = $request->request->get('libelle');
             $code = $request->request->get('code');
             $zoom = $request->request->get('zoom');
-            $centre = $request->request->get('centre');
+            $centreLat = $request->request->get('centreLat');
+        $centreLng = $request->request->get('centreLng');
             $userUpdate = $request->request->get('userUpdate');
 
             if ($zone !== null) {
                 $zone->setLibelle($libelle);
                 $zone->setCode($code);
-                $zone->setCentre($centre);
+                $zone->setCentreLat($centreLat);
+                $zone->setCentreLng($centreLng);
                 $zone->setZoom($zoom);
                 $zone->setUpdatedBy($this->userRepository->find($userUpdate));
                 $zone->setUpdatedAt(new \DateTime());
