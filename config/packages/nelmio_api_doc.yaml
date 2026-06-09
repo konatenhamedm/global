@@ -1,9 +1,9 @@
 nelmio_api_doc:
     documentation:
         servers:
-          - url: https://back.globaloutdoor.ci
+          - url: http://global.ticleaders.net
             description: API over HTTP
-          - url: https://back.globaloutdoor.ci
+          - url: http://global.ticleaders.net
             description: API over HTTPS
         info:
             title: GLOBAL 
