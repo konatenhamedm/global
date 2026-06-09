@@ -345,7 +345,7 @@ class ApiPanneauController extends ApiInterface
             properties: [
                 new OA\Property(property: "code", type: "integer", example: 200),
                 new OA\Property(property: "message", type: "string", example: "Cette ressource est inexistante"),
-                new OA\Property(property: "data", type: "array", example: []),
+                new OA\Property(property: "data", type: "array", items: new OA\Items(), example: []),
                 new OA\Property(property: "errors", type: "array", items: new OA\Items(type: "string"), example: []),
             ]
         )
