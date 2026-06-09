@@ -16,29 +16,61 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+#[OA\Info(
+    title: "API Panneau Publicitaire",
+    version: "1.0.0",
+    description: "API de gestion des panneaux publicitaires, clients, commandes et validations."
+)]
 class AuthController extends ApiInterface
 {
 
-    #[Route('/api/compte/user/creation',  methods: ['POST'])]
-    /**
-     * Permet de créer un compte user client.
-     */
+    #[Route('/api/compte/user/creation', methods: ['POST'])]
     #[OA\Post(
-        summary: "Permet de créer un compte user client",
-        description: "",
+        summary: "Créer un compte utilisateur client",
+        description: "Crée un nouveau compte utilisateur avec le rôle ROLE_USER et envoie un email de confirmation.",
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
+                required: ['email', 'password'],
                 properties: [
-                    new OA\Property(property: "email", type: "string"),
-                    new OA\Property(property: "password", type: "string"),
-                    
+                    new OA\Property(property: "email", type: "string", format: "email", example: "client@example.com"),
+                    new OA\Property(property: "password", type: "string", format: "password", minLength: 6, example: "motdepasse123"),
                 ],
                 type: "object"
             )
         ),
         responses: [
-            new OA\Response(response: 401, description: "Invalid credentials")
+            new OA\Response(
+                response: 200,
+                description: "Compte créé avec succès",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "code", type: "integer", example: 200),
+                        new OA\Property(property: "message", type: "string", example: "Operation effectuée avec succes"),
+                        new OA\Property(
+                            property: "data",
+                            type: "object",
+                            properties: [
+                                new OA\Property(property: "id", type: "integer", example: 1),
+                                new OA\Property(property: "email", type: "string", example: "client@example.com"),
+                                new OA\Property(property: "roles", type: "array", items: new OA\Items(type: "string"), example: ["ROLE_USER"]),
+                            ]
+                        ),
+                        new OA\Property(property: "errors", type: "array", items: new OA\Items(type: "string"), example: []),
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 400,
+                description: "Données invalides (email déjà existant, mot de passe trop court, etc.)",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "code", type: "integer", example: 400),
+                        new OA\Property(property: "message", type: "string", example: "Validation failed"),
+                        new OA\Property(property: "errors", type: "array", items: new OA\Items(type: "string"), example: ["Cette adresse email est déjà utilisée."]),
+                    ]
+                )
+            ),
         ]
     )]
     #[OA\Tag(name: 'authentification')]
@@ -86,14 +118,15 @@ class AuthController extends ApiInterface
 
     #[Route('/api/login_check', name: 'api_login_check', methods: ['POST'])]
     #[OA\Post(
-        summary: "Authentification utilisateur membre",
-        description: "Génère un token JWT pour les utilisateurs du front.",
+        summary: "Connexion utilisateur client (JWT)",
+        description: "Génère un token JWT pour les utilisateurs clients. Ce token doit être inclus dans les requêtes suivantes via le header `Authorization: Bearer <token>`.",
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
+                required: ['username', 'password'],
                 properties: [
-                    new OA\Property(property: "username", type: "string"),
-                    new OA\Property(property: "password", type: "string")
+                    new OA\Property(property: "username", type: "string", format: "email", description: "L'adresse email de l'utilisateur", example: "client@example.com"),
+                    new OA\Property(property: "password", type: "string", format: "password", example: "motdepasse123"),
                 ],
                 type: "object"
             )
@@ -101,15 +134,24 @@ class AuthController extends ApiInterface
         responses: [
             new OA\Response(
                 response: 200,
-                description: "Token généré",
+                description: "Connexion réussie — retourne un token JWT",
                 content: new OA\JsonContent(
                     properties: [
-                        new OA\Property(property: "token", type: "string")
+                        new OA\Property(property: "token", type: "string", example: "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9..."),
                     ],
                     type: "object"
                 )
             ),
-            new OA\Response(response: 401, description: "Invalid credentials")
+            new OA\Response(
+                response: 401,
+                description: "Identifiants invalides",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "code", type: "integer", example: 401),
+                        new OA\Property(property: "message", type: "string", example: "Invalid credentials."),
+                    ]
+                )
+            ),
         ]
     )]
     #[OA\Tag(name: 'authentification')]
@@ -118,8 +160,8 @@ class AuthController extends ApiInterface
         return new JsonResponse(['message' => 'Cette route est gérée par LexikJWTAuthenticationBundle'], 200);
     }
 
-    #[Route('/api/auth/send_mail', name: 'api_auth_send_mail', methods: ['POST',"GET"])]
-    public function sendMail(Request $request,SendMailService $sendMailService): JsonResponse
+    #[Route('/api/auth/send_mail', name: 'api_auth_send_mail', methods: ['POST', "GET"])]
+    public function sendMail(Request $request, SendMailService $sendMailService): JsonResponse
     {
         $info_user = [
             'login' => "konatenhamed@gmail.com",
@@ -142,14 +184,15 @@ class AuthController extends ApiInterface
 
     #[Route('/api/auth/login_check', name: 'api_auth_login_check', methods: ['POST'])]
     #[OA\Post(
-        summary: "Authentification admin",
-        description: "Génère un token JWT pour les administrateurs.",
+        summary: "Connexion administrateur (JWT)",
+        description: "Génère un token JWT pour les administrateurs du back-office. Ce token doit être inclus dans les requêtes suivantes via le header `Authorization: Bearer <token>`.",
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
+                required: ['username', 'password'],
                 properties: [
-                    new OA\Property(property: "username", type: "string"),
-                    new OA\Property(property: "password", type: "string")
+                    new OA\Property(property: "username", type: "string", format: "email", description: "L'adresse email de l'administrateur", example: "admin@example.com"),
+                    new OA\Property(property: "password", type: "string", format: "password", example: "adminpass123"),
                 ],
                 type: "object"
             )
@@ -157,15 +200,24 @@ class AuthController extends ApiInterface
         responses: [
             new OA\Response(
                 response: 200,
-                description: "Token généré",
+                description: "Connexion réussie — retourne un token JWT",
                 content: new OA\JsonContent(
                     properties: [
-                        new OA\Property(property: "token", type: "string")
+                        new OA\Property(property: "token", type: "string", example: "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9..."),
                     ],
                     type: "object"
                 )
             ),
-            new OA\Response(response: 401, description: "Invalid credentials")
+            new OA\Response(
+                response: 401,
+                description: "Identifiants invalides",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "code", type: "integer", example: 401),
+                        new OA\Property(property: "message", type: "string", example: "Invalid credentials."),
+                    ]
+                )
+            ),
         ]
     )]
     #[OA\Tag(name: 'authentification')]

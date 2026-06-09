@@ -34,26 +34,55 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 #[Route('/api/client')]
 class ApiClientController extends ApiInterface
 {
-
     #[Route('/', methods: ['GET'])]
-    /**
-     * Retourne la liste des clients.
-     * 
-     */
+    #[OA\Get(
+        summary: "Lister tous les clients",
+        description: "Retourne la liste complète de tous les clients (particuliers et entreprises)."
+    )]
     #[OA\Response(
         response: 200,
-        description: 'Returns the rewards of a user',
+        description: "Liste des clients récupérée avec succès",
         content: new OA\JsonContent(
-            type: 'array',
-            items: new OA\Items(ref: new Model(type: Client::class, groups: ['full']))
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 200),
+                new OA\Property(property: "message", type: "string", example: "Operation effectuée avec succes"),
+                new OA\Property(
+                    property: "data",
+                    type: "array",
+                    items: new OA\Items(
+                        properties: [
+                            new OA\Property(property: "id", type: "integer", example: 1),
+                            new OA\Property(property: "typeClient", type: "string", enum: ["individual", "entreprise"], example: "individual"),
+                            new OA\Property(property: "nom", type: "string", example: "KONATÉ"),
+                            new OA\Property(property: "prenoms", type: "string", example: "Hamédine"),
+                            new OA\Property(property: "contact", type: "string", example: "+2250101020304"),
+                            new OA\Property(property: "email", type: "string", example: "client@example.com"),
+                            new OA\Property(property: "denomination", type: "string", nullable: true, example: "Société ABC"),
+                            new OA\Property(property: "compteContribuable", type: "string", nullable: true, example: "CC123456"),
+                            new OA\Property(property: "adresse", type: "string", nullable: true, example: "Abidjan, Cocody"),
+                            new OA\Property(property: "registreCommerce", type: "string", nullable: true, example: "RC/ABJ/2024/001"),
+                        ]
+                    )
+                ),
+                new OA\Property(property: "errors", type: "array", items: new OA\Items(type: "string"), example: []),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 500,
+        description: "Erreur interne du serveur",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 500),
+                new OA\Property(property: "message", type: "string", example: "Erreur interne du serveur"),
+                new OA\Property(property: "data", nullable: true, example: null),
+            ]
         )
     )]
     #[OA\Tag(name: 'client')]
-    // #[Security(name: 'Bearer')]
     public function index(ClientRepository $clientRepository): Response
     {
         try {
-
             $clients = $clientRepository->findAll();
             $response =  $this->responseData($clients, 'group1', ['Content-Type' => 'application/json']);
         } catch (\Exception $exception) {
@@ -61,107 +90,154 @@ class ApiClientController extends ApiInterface
             $response = $this->response('[]');
         }
 
-        // On envoie la réponse
         return $response;
     }
 
 
     #[Route('/get/one/{id}', methods: ['GET'])]
-    /**
-     * Affiche un(e) client en offrant un identifiant.
-     */
+    #[OA\Get(
+        summary: "Obtenir un client par ID",
+        description: "Retourne les détails complets d'un client (particulier ou entreprise) à partir de son identifiant."
+    )]
+    #[OA\Parameter(
+        name: 'id',
+        in: 'path',
+        required: true,
+        description: "Identifiant unique du client",
+        schema: new OA\Schema(type: 'integer', example: 1)
+    )]
     #[OA\Response(
         response: 200,
-        description: 'Affiche un(e) client en offrant un identifiant',
+        description: "Client trouvé",
         content: new OA\JsonContent(
-            type: 'array',
-            items: new OA\Items(ref: new Model(type: Client::class, groups: ['full']))
-            
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 200),
+                new OA\Property(property: "message", type: "string", example: "Operation effectuée avec succes"),
+                new OA\Property(
+                    property: "data",
+                    type: "object",
+                    properties: [
+                        new OA\Property(property: "id", type: "integer", example: 1),
+                        new OA\Property(property: "typeClient", type: "string", enum: ["individual", "entreprise"], example: "individual"),
+                        new OA\Property(property: "nom", type: "string", example: "KONATÉ"),
+                        new OA\Property(property: "prenoms", type: "string", example: "Hamédine"),
+                        new OA\Property(property: "contact", type: "string", example: "+2250101020304"),
+                        new OA\Property(property: "email", type: "string", example: "client@example.com"),
+                        new OA\Property(property: "denomination", type: "string", nullable: true, example: null),
+                        new OA\Property(property: "compteContribuable", type: "string", nullable: true, example: null),
+                        new OA\Property(property: "adresse", type: "string", nullable: true, example: null),
+                        new OA\Property(property: "registreCommerce", type: "string", nullable: true, example: null),
+                    ]
+                ),
+                new OA\Property(property: "errors", type: "array", items: new OA\Items(type: "string"), example: []),
+            ]
         )
     )]
-    
+    #[OA\Response(
+        response: 300,
+        description: "Client non trouvé",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "data", nullable: true, example: null),
+                new OA\Property(property: "message", type: "string", example: "Cette ressource est inexistante"),
+                new OA\Property(property: "status", type: "integer", example: 300),
+            ]
+        )
+    )]
     #[OA\Tag(name: 'client')]
-    //#[Security(name: 'Bearer')]
     public function getOne(?Client $client)
     {
-
         try {
-
             $response =  $this->responseData($client, 'group1', ['Content-Type' => 'application/json']);
         } catch (\Exception $exception) {
             $this->setMessage("");
             $response = $this->response('[]');
         }
 
-        // On envoie la réponse
         return $response;
-
-
     }
 
 
-    #[Route('/create',  methods: ['POST'])]
-    /**
-     * Permet de créer un(e) client.
-     */
+    #[Route('/create', methods: ['POST'])]
     #[OA\Post(
-        summary: "Authentification client",
-        description: "Génère un token JWT pour les clientistrateurs.",
+        summary: "Créer un nouveau client",
+        description: "Crée un client particulier ou une entreprise. Le champ `type` détermine le profil :\n- `individual` : particulier (nom, prénoms, contact, email requis)\n- `entreprise` : société (denomination, compteContribuable, adresse, etc. requis)\n\nLe champ `userId` est l'ID d'un utilisateur déjà créé (compte) à associer au client.",
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\MediaType(
                 mediaType: "multipart/form-data",
                 schema: new OA\Schema(
-                properties: [
-                    new OA\Property(property: "userId", type: "string"),
-                    new OA\Property(property: "type", type: "string"),
-                    new OA\Property(property: "nom", type: "string"),
-                    new OA\Property(property: "prenoms", type: "string"),
-                    new OA\Property(property: "contact", type: "string"),
-
-                    new OA\Property(property: "email", type: "string"),
-                    new OA\Property(property: "registreCommerce", type: "string"),
-
-                    new OA\Property(property: "denomination", type: "string"),
-                    new OA\Property(property: "compteContribuable", type: "string"),
-                    new OA\Property(property: "addresse", type: "string"),
-                    new OA\Property(property: "telComptabilite", type: "string"),
-                    new OA\Property(property: "emailComptabilite", type: "string"),
-                    new OA\Property(property: "nomStructureFacture", type: "string"),
-                    new OA\Property(property: "localisation", type: "string"),
-                    new OA\Property(property: "userUpdate", type: "string"),
-
-                ],
-                type: "object"
+                    required: ['type', 'userId', 'userUpdate'],
+                    properties: [
+                        new OA\Property(property: "userId", type: "integer", description: "ID du compte utilisateur à associer au client", example: 3),
+                        new OA\Property(property: "type", type: "string", description: "Code du type de client", enum: ["individual", "entreprise"], example: "individual"),
+                        new OA\Property(property: "nom", type: "string", description: "Nom (si particulier)", example: "KONATÉ"),
+                        new OA\Property(property: "prenoms", type: "string", description: "Prénoms (si particulier)", example: "Hamédine"),
+                        new OA\Property(property: "contact", type: "string", example: "+2250101020304"),
+                        new OA\Property(property: "email", type: "string", format: "email", example: "client@example.com"),
+                        new OA\Property(property: "registreCommerce", type: "string", description: "Registre de commerce (si entreprise)", example: "RC/ABJ/2024/001"),
+                        new OA\Property(property: "denomination", type: "string", description: "Dénomination sociale (si entreprise)", example: "Société ABC SARL"),
+                        new OA\Property(property: "compteContribuable", type: "string", description: "Numéro de compte contribuable (si entreprise)", example: "CC-123456"),
+                        new OA\Property(property: "addresse", type: "string", description: "Adresse physique (si entreprise)", example: "Abidjan, Cocody, Rue des Jardins"),
+                        new OA\Property(property: "telComptabilite", type: "string", description: "Téléphone comptabilité (si entreprise)", example: "+2250102030405"),
+                        new OA\Property(property: "emailComptabilite", type: "string", description: "Email comptabilité (si entreprise)", example: "compta@societeabc.ci"),
+                        new OA\Property(property: "nomStructureFacture", type: "string", description: "Nom sur la facture (si entreprise)", example: "Société ABC SARL"),
+                        new OA\Property(property: "localisation", type: "string", description: "Localisation géographique (si entreprise)", example: "Abidjan"),
+                        new OA\Property(property: "userUpdate", type: "integer", description: "ID de l'utilisateur qui effectue l'opération", example: 1),
+                    ],
+                    type: "object"
+                )
             )
-            )
-        ),
-        responses: [
-            new OA\Response(response: 401, description: "Invalid credentials")
-        ]
+        )
+    )]
+    #[OA\Response(
+        response: 200,
+        description: "Client créé avec succès",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 200),
+                new OA\Property(property: "message", type: "string", example: "Operation effectuée avec succes"),
+                new OA\Property(
+                    property: "data",
+                    type: "object",
+                    properties: [
+                        new OA\Property(property: "id", type: "integer", example: 10),
+                        new OA\Property(property: "typeClient", type: "string", example: "individual"),
+                        new OA\Property(property: "nom", type: "string", example: "KONATÉ"),
+                        new OA\Property(property: "prenoms", type: "string", example: "Hamédine"),
+                    ]
+                ),
+                new OA\Property(property: "errors", type: "array", items: new OA\Items(type: "string"), example: []),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 400,
+        description: "Données invalides",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 400),
+                new OA\Property(property: "message", type: "string", example: "Validation failed"),
+                new OA\Property(property: "errors", type: "array", items: new OA\Items(type: "string"), example: ["Le nom est obligatoire.", "Le type de client est invalide."]),
+            ]
+        )
     )]
     #[OA\Tag(name: 'client')]
-    public function create(Request $request,TypeClientRepository $typeClientRepository, ClientRepository $clientRepository,GenreRepository $genreRepository,CiviliteRepository $civiliteRepository,FonctionRepository $fonctionRepository,UserRepository $userRepository): Response
+    public function create(Request $request, TypeClientRepository $typeClientRepository, ClientRepository $clientRepository, GenreRepository $genreRepository, CiviliteRepository $civiliteRepository, FonctionRepository $fonctionRepository, UserRepository $userRepository): Response
     {
-
         $data = json_decode($request->getContent(), true);
-
-  
-
 
         $client = new Client();
 
-        $type = $typeClientRepository->findOneBy(['code'=> $request->get('type')])->getCode();
+        $type = $typeClientRepository->findOneBy(['code' => $request->get('type')])->getCode();
 
-        if($type == "individual"){
+        if ($type == "individual") {
             $client->setTypeClient($type);
             $client->setNom($request->get('nom'));
             $client->setPrenoms($request->get('prenoms'));
             $client->setContact($request->get('contact'));
             $client->setEmail($request->get('email'));
-
-
-        }else{
+        } else {
             $client->setTypeClient($type);
             $client->setDenomination($request->get('denomination'));
             $client->setCompteContribuable($request->get('compteContribuable'));
@@ -182,15 +258,12 @@ class ApiClientController extends ApiInterface
 
         $errorResponse = $this->errorResponse($client);
         if ($errorResponse !== null) {
-            return $errorResponse; // Retourne la réponse d'erreur si des erreurs sont présentes
+            return $errorResponse;
         } else {
-
             $user = $userRepository->find($request->get('userId'));
-            
             $clientRepository->add($client, true);
             $user->setPersonne($client);
             $userRepository->add($user, true);
-
         }
 
         return $this->responseData($client, 'group1', ['Content-Type' => 'application/json']);
@@ -199,66 +272,100 @@ class ApiClientController extends ApiInterface
 
     #[Route('/update/{id}', methods: ['PUT', 'POST'])]
     #[OA\Post(
-        summary: "Creation de client",
-        description: "Permet de créer un client.",
+        summary: "Modifier un client existant",
+        description: "Met à jour les informations d'un client (particulier ou entreprise) identifié par son ID. Le type de client déjà enregistré détermine quels champs sont mis à jour.",
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\MediaType(
                 mediaType: "multipart/form-data",
                 schema: new OA\Schema(
-                    type: "object",
-                properties: [
-                    new OA\Property(property: "type", type: "string"),
-                    new OA\Property(property: "nom", type: "string"),
-                    new OA\Property(property: "prenoms", type: "string"),
-                    new OA\Property(property: "contact", type: "string"),
-
-                    new OA\Property(property: "email", type: "string"),
-                    new OA\Property(property: "registreCommerce", type: "string"),
-
-                    new OA\Property(property: "denomination", type: "string"),
-                    new OA\Property(property: "compteContribuable", type: "string"),
-                    new OA\Property(property: "adresse", type: "string"),
-                    new OA\Property(property: "telComptabilite", type: "string"),
-                    new OA\Property(property: "emailComptabilite", type: "string"),
-                    new OA\Property(property: "nomStructureFacture", type: "string"),
-                    new OA\Property(property: "localisation", type: "string"),
-                    new OA\Property(property: "userUpdate", type: "string"),
-
-                ],
-             
+                    properties: [
+                        new OA\Property(property: "type", type: "string", enum: ["individual", "entreprise"], example: "individual"),
+                        new OA\Property(property: "nom", type: "string", example: "KONATÉ"),
+                        new OA\Property(property: "prenoms", type: "string", example: "Hamédine"),
+                        new OA\Property(property: "contact", type: "string", example: "+2250101020304"),
+                        new OA\Property(property: "email", type: "string", format: "email", example: "client@example.com"),
+                        new OA\Property(property: "registreCommerce", type: "string", nullable: true, example: null),
+                        new OA\Property(property: "denomination", type: "string", nullable: true, example: null),
+                        new OA\Property(property: "compteContribuable", type: "string", nullable: true, example: null),
+                        new OA\Property(property: "adresse", type: "string", nullable: true, example: null),
+                        new OA\Property(property: "telComptabilite", type: "string", nullable: true, example: null),
+                        new OA\Property(property: "emailComptabilite", type: "string", nullable: true, example: null),
+                        new OA\Property(property: "nomStructureFacture", type: "string", nullable: true, example: null),
+                        new OA\Property(property: "localisation", type: "string", nullable: true, example: null),
+                        new OA\Property(property: "userUpdate", type: "integer", description: "ID de l'utilisateur qui effectue la modification", example: 1),
+                    ],
+                    type: "object"
+                )
             )
-            )
-        ),
-        responses: [
-            new OA\Response(response: 401, description: "Invalid credentials")
-        ]
+        )
+    )]
+    #[OA\Parameter(
+        name: 'id',
+        in: 'path',
+        required: true,
+        description: "Identifiant unique du client à modifier",
+        schema: new OA\Schema(type: 'integer', example: 1)
+    )]
+    #[OA\Response(
+        response: 200,
+        description: "Client modifié avec succès",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 200),
+                new OA\Property(property: "message", type: "string", example: "Operation effectuée avec succes"),
+                new OA\Property(property: "data", type: "object"),
+                new OA\Property(property: "errors", type: "array", items: new OA\Items(type: "string"), example: []),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 400,
+        description: "Données invalides",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 400),
+                new OA\Property(property: "message", type: "string", example: "Validation failed"),
+                new OA\Property(property: "errors", type: "array", items: new OA\Items(type: "string"), example: ["Le nom est obligatoire."]),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 300,
+        description: "Client non trouvé",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "data", nullable: true, example: null),
+                new OA\Property(property: "message", type: "string", example: "Cette ressource est inexistante"),
+                new OA\Property(property: "status", type: "integer", example: 300),
+            ]
+        )
     )]
     #[OA\Tag(name: 'client')]
-    public function update(Request $request, Client $client, ClientRepository $clientRepository,GenreRepository $genreRepository,CiviliteRepository $civiliteRepository,FonctionRepository $fonctionRepository): Response
+    public function update(Request $request, Client $client, ClientRepository $clientRepository, GenreRepository $genreRepository, CiviliteRepository $civiliteRepository, FonctionRepository $fonctionRepository): Response
     {
         try {
             $data = json_decode($request->getContent());
             if ($client != null) {
 
-              $typeClient =  $client->getTypeClient()->getCode();
-              if($typeClient == "individual"){            
-                $client->setNom($request->get('nom'));
-                $client->setPrenoms($request->get('prenoms'));
-                $client->setContact($request->get('contact'));
-                $client->setEmail($request->get('email'));
-              }else{
-                $client->setDenomination($request->get('denomination'));
-                $client->setCompteContribuable($request->get('compteContribuable'));
-                $client->setAdresse($request->get('adresse'));
-                $client->setTelComptabilite($request->get('telComptabilite'));
-                $client->setEmailComptabilite($request->get('emailComptabilite'));
-                $client->setNomStructureFacture($request->get('nomStructureFacture'));
-                $client->setLocalisation($request->get('localisation'));
-                $client->setRegistreCommerce($request->get('registreCommerce'));
-                $client->setEmail($request->get('email'));
-                $client->setContact($request->get('contact'));
-              }
+                $typeClient = $client->getTypeClient()->getCode();
+                if ($typeClient == "individual") {
+                    $client->setNom($request->get('nom'));
+                    $client->setPrenoms($request->get('prenoms'));
+                    $client->setContact($request->get('contact'));
+                    $client->setEmail($request->get('email'));
+                } else {
+                    $client->setDenomination($request->get('denomination'));
+                    $client->setCompteContribuable($request->get('compteContribuable'));
+                    $client->setAdresse($request->get('adresse'));
+                    $client->setTelComptabilite($request->get('telComptabilite'));
+                    $client->setEmailComptabilite($request->get('emailComptabilite'));
+                    $client->setNomStructureFacture($request->get('nomStructureFacture'));
+                    $client->setLocalisation($request->get('localisation'));
+                    $client->setRegistreCommerce($request->get('registreCommerce'));
+                    $client->setEmail($request->get('email'));
+                    $client->setContact($request->get('contact'));
+                }
 
                 $client->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
                 $client->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
@@ -266,14 +373,11 @@ class ApiClientController extends ApiInterface
                 $errorResponse = $this->errorResponse($client);
 
                 if ($errorResponse !== null) {
-                    return $errorResponse; // Retourne la réponse d'erreur si des erreurs sont présentes
+                    return $errorResponse;
                 } else {
                     $clientRepository->add($client, true);
                 }
 
-
-
-                // On retourne la confirmation
                 $response = $this->responseData($client, 'group1', ['Content-Type' => 'application/json']);
             } else {
                 $this->setMessage("Cette ressource est inexsitante");
@@ -287,32 +391,47 @@ class ApiClientController extends ApiInterface
         return $response;
     }
 
-    //const TAB_ID = 'parametre-tabs';
 
-    #[Route('/delete/{id}',  methods: ['DELETE'])]
-    /**
-     * permet de supprimer un(e) client.
-     */
+    #[Route('/delete/{id}', methods: ['DELETE'])]
+    #[OA\Delete(
+        summary: "Supprimer un client",
+        description: "Supprime définitivement un client à partir de son identifiant."
+    )]
+    #[OA\Parameter(
+        name: 'id',
+        in: 'path',
+        required: true,
+        description: "Identifiant unique du client à supprimer",
+        schema: new OA\Schema(type: 'integer', example: 1)
+    )]
     #[OA\Response(
         response: 200,
-        description: 'permet de supprimer un(e) client',
+        description: "Client supprimé avec succès",
         content: new OA\JsonContent(
-            type: 'array',
-            items: new OA\Items(ref: new Model(type: Client::class, groups: ['full']))
-           
+            properties: [
+                new OA\Property(property: "data", nullable: true, example: null),
+                new OA\Property(property: "message", type: "string", example: "Operation effectuées avec success"),
+                new OA\Property(property: "status", type: "integer", example: 200),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 300,
+        description: "Client non trouvé",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "data", nullable: true, example: null),
+                new OA\Property(property: "message", type: "string", example: "Cette ressource est inexistante"),
+                new OA\Property(property: "status", type: "integer", example: 300),
+            ]
         )
     )]
     #[OA\Tag(name: 'client')]
-    //#[Security(name: 'Bearer')]
     public function delete(Request $request, Client $client, ClientRepository $villeRepository): Response
     {
         try {
-
             if ($client != null) {
-
                 $villeRepository->remove($client, true);
-
-                // On retourne la confirmation
                 $this->setMessage("Operation effectuées avec success");
                 $response = $this->response($client);
             } else {
@@ -327,17 +446,37 @@ class ApiClientController extends ApiInterface
         return $response;
     }
 
-    #[Route('/delete/all',  methods: ['DELETE'])]
-    /**
-     * Permet de supprimer plusieurs client.
-     */
+    #[Route('/delete/all', methods: ['DELETE'])]
+    #[OA\Delete(
+        summary: "Supprimer plusieurs clients",
+        description: "Supprime une liste de clients en passant leurs IDs dans le corps de la requête.",
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(
+                        property: "ids",
+                        type: "array",
+                        description: "Liste des IDs clients à supprimer",
+                        items: new OA\Items(
+                            type: "object",
+                            properties: [new OA\Property(property: "id", type: "integer", example: 1)]
+                        ),
+                        example: [["id" => 1], ["id" => 2]]
+                    ),
+                ]
+            )
+        )
+    )]
     #[OA\Response(
         response: 200,
-        description: 'Returns the rewards of an user',
+        description: "Clients supprimés avec succès",
         content: new OA\JsonContent(
-            type: 'array',
-            items: new OA\Items(ref: new Model(type: Client::class, groups: ['full']))
-          
+            properties: [
+                new OA\Property(property: "data", type: "string", example: "[]"),
+                new OA\Property(property: "message", type: "string", example: "Operation effectuées avec success"),
+                new OA\Property(property: "status", type: "integer", example: 200),
+            ]
         )
     )]
     #[OA\Tag(name: 'client')]

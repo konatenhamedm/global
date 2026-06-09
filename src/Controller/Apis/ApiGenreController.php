@@ -3,80 +3,114 @@
 namespace  App\Controller\Apis;
 
 use App\Controller\Apis\Config\ApiInterface;
-use App\DTO\GenreDTO;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Entity\Genre;
 use App\Repository\GenreRepository;
-use App\Repository\UserRepository;
 use DateTime;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use OpenApi\Attributes as OA;
 use Nelmio\ApiDocBundle\Attribute\Model;
-use Nelmio\ApiDocBundle\Annotation\Security;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
 #[Route('/api/genre')]
 class ApiGenreController extends ApiInterface
 {
-
-
-
     #[Route('/', methods: ['GET'])]
-    /**
-     * Retourne la liste des genres.
-     * 
-     */
+    #[OA\Get(
+        summary: "Lister tous les genres",
+        description: "Retourne la liste complète de tous les genres (données de référence)."
+    )]
     #[OA\Response(
         response: 200,
-        description: 'Returns the rewards of a user',
+        description: "Liste des genres récupérée avec succès",
         content: new OA\JsonContent(
-            type: 'array',
-            items: new OA\Items(ref: new Model(type: Genre::class, groups: ['full']))
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 200),
+                new OA\Property(property: "message", type: "string", example: "Operation effectuée avec succes"),
+                new OA\Property(
+                    property: "data",
+                    type: "array",
+                    items: new OA\Items(
+                        properties: [
+                            new OA\Property(property: "id", type: "integer", example: 1),
+                            new OA\Property(property: "libelle", type: "string", example: "Genre exemple"),
+                            new OA\Property(property: "code", type: "string", example: "GEN-01"),
+                        ]
+                    )
+                ),
+                new OA\Property(property: "errors", type: "array", items: new OA\Items(type: "string"), example: []),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 500,
+        description: "Erreur interne du serveur",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 500),
+                new OA\Property(property: "message", type: "string", example: "Erreur interne du serveur"),
+                new OA\Property(property: "data", nullable: true, example: null),
+            ]
         )
     )]
     #[OA\Tag(name: 'genre')]
-    // #[Security(name: 'Bearer')]
     public function index(GenreRepository $genreRepository): Response
     {
         try {
-
             $genres = $genreRepository->findAll();
-
-          
-
-            $response =  $this->responseData($genres, 'group1', ['Content-Type' => 'application/json']);
+            $response = $this->responseData($genres, 'group1', ['Content-Type' => 'application/json']);
         } catch (\Exception $exception) {
             $this->setMessage("");
             $response = $this->response('[]');
         }
-
-        // On envoie la réponse
         return $response;
     }
 
 
     #[Route('/get/one/{id}', methods: ['GET'])]
-    /**
-     * Affiche un(e) genre en offrant un identifiant.
-     */
-    #[OA\Response(
-        response: 200,
-        description: 'Affiche un(e) genre en offrant un identifiant',
-        content: new OA\JsonContent(
-            type: 'array',
-            items: new OA\Items(ref: new Model(type: Genre::class, groups: ['full']))
-            
-        )
+    #[OA\Get(
+        summary: "Obtenir un genre par ID",
+        description: "Retourne les détails d\'un genre à partir de son identifiant."
     )]
     #[OA\Parameter(
-        name: 'code',
-        in: 'query',
-        schema: new OA\Schema(type: 'string')
+        name: 'id',
+        in: 'path',
+        required: true,
+        description: "Identifiant unique du genre",
+        schema: new OA\Schema(type: 'integer', example: 1)
+    )]
+    #[OA\Response(
+        response: 200,
+        description: "Genre trouvé",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 200),
+                new OA\Property(property: "message", type: "string", example: "Operation effectuée avec succes"),
+                new OA\Property(
+                    property: "data",
+                    type: "object",
+                    properties: [
+                        new OA\Property(property: "id", type: "integer", example: 1),
+                        new OA\Property(property: "libelle", type: "string", example: "Genre exemple"),
+                        new OA\Property(property: "code", type: "string", example: "GEN-01"),
+                    ]
+                ),
+                new OA\Property(property: "errors", type: "array", items: new OA\Items(type: "string"), example: []),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 300,
+        description: "Genre non trouvé",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "data", nullable: true, example: null),
+                new OA\Property(property: "message", type: "string", example: "Cette ressource est inexistante"),
+                new OA\Property(property: "status", type: "integer", example: 300),
+            ]
+        )
     )]
     #[OA\Tag(name: 'genre')]
-    //#[Security(name: 'Bearer')]
     public function getOne(?Genre $genre)
     {
         try {
@@ -91,147 +125,210 @@ class ApiGenreController extends ApiInterface
             $this->setMessage($exception->getMessage());
             $response = $this->response('[]');
         }
-
-
         return $response;
     }
 
 
-    #[Route('/create',  methods: ['POST'])]
-    /**
-     * Permet de créer un(e) genre.
-     */
+    #[Route('/create', methods: ['POST'])]
     #[OA\Post(
-        summary: "Authentification admin",
-        description: "Génère un token JWT pour les administrateurs.",
+        summary: "Créer un nouveau genre",
+        description: "Crée un nouveau genre dans la liste de référence.",
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\MediaType(
                 mediaType: "multipart/form-data",
                 schema: new OA\Schema(
-                properties: [
-                    new OA\Property(property: "libelle", type: "string"),
-                    new OA\Property(property: "code", type: "string"),
-                    new OA\Property(property: "userUpdate", type: "string"),
-
-                ],
-                type: "object"
+                    required: ["libelle", "code", "userUpdate"],
+                    properties: [
+                        new OA\Property(property: "libelle", type: "string", example: "M."),
+                        new OA\Property(property: "code", type: "string", example: "CODE-01"),
+                        new OA\Property(property: "userUpdate", type: "integer", description: "ID de l\'utilisateur qui crée", example: 1),
+                    ],
+                    type: "object"
+                )
             )
-            )
-        ),
-        responses: [
-            new OA\Response(response: 401, description: "Invalid credentials")
-        ]
+        )
+    )]
+    #[OA\Response(
+        response: 200,
+        description: "Genre créé avec succès",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 200),
+                new OA\Property(property: "message", type: "string", example: "Operation effectuée avec succes"),
+                new OA\Property(
+                    property: "data",
+                    type: "object",
+                    properties: [
+                        new OA\Property(property: "id", type: "integer", example: 5),
+                        new OA\Property(property: "libelle", type: "string", example: "Genre exemple"),
+                        new OA\Property(property: "code", type: "string", example: "GEN-01"),
+                    ]
+                ),
+                new OA\Property(property: "errors", type: "array", items: new OA\Items(type: "string"), example: []),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 400,
+        description: "Données invalides",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 400),
+                new OA\Property(property: "message", type: "string", example: "Validation failed"),
+                new OA\Property(property: "errors", type: "array", items: new OA\Items(type: "string"), example: ["Le libellé est obligatoire."]),
+            ]
+        )
     )]
     #[OA\Tag(name: 'genre')]
     public function create(Request $request, GenreRepository $genreRepository): Response
     {
-
-        $data = json_decode($request->getContent(), true);
         $genre = new Genre();
-        $genre->setLibelle($request->get('libelle'));
-        $genre->setCode($request->get('code'));
-        $genre->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
-        $genre->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
-        $genre->setCreatedAtValue(new DateTime());
-        $genre->setUpdatedAt(new DateTime());
+        $genre->setLibelle($request->request->get('libelle'));
+        $genre->setCode($request->request->get('code'));
+        $genre->setCreatedBy($this->userRepository->find($request->request->get('userUpdate')));
+        $genre->setUpdatedBy($this->userRepository->find($request->request->get('userUpdate')));
+        $genre->setCreatedAtValue(new \DateTime());
+        $genre->setUpdatedAt(new \DateTime());
 
         $errorResponse = $this->errorResponse($genre);
         if ($errorResponse !== null) {
-            return $errorResponse; // Retourne la réponse d'erreur si des erreurs sont présentes
-        } else {
-
-            $genreRepository->add($genre, true);
+            return $errorResponse;
         }
 
+        $genreRepository->add($genre, true);
         return $this->responseData($genre, 'group1', ['Content-Type' => 'application/json']);
     }
 
 
     #[Route('/update/{id}', methods: ['PUT', 'POST'])]
     #[OA\Post(
-        summary: "Creation de genre",
-        description: "Permet de créer un genre.",
+        summary: "Modifier un genre existant",
+        description: "Met à jour les informations d\'un genre identifié par son ID.",
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\MediaType(
                 mediaType: "multipart/form-data",
                 schema: new OA\Schema(
-                properties: [
-                    new OA\Property(property: "libelle", type: "string"),
-                    new OA\Property(property: "code", type: "string"),
-                    new OA\Property(property: "userUpdate", type: "string"),
-
-                ],
-                type: "object"
+                    properties: [
+                        new OA\Property(property: "libelle", type: "string", example: "M."),
+                        new OA\Property(property: "code", type: "string", example: "CODE-01"),
+                        new OA\Property(property: "userUpdate", type: "integer", description: "ID de l\'utilisateur qui modifie", example: 1),
+                    ],
+                    type: "object"
+                )
             )
-            )
-        ),
-        responses: [
-            new OA\Response(response: 401, description: "Invalid credentials")
-        ]
+        )
+    )]
+    #[OA\Parameter(
+        name: 'id',
+        in: 'path',
+        required: true,
+        description: "Identifiant unique du genre à modifier",
+        schema: new OA\Schema(type: 'integer', example: 1)
+    )]
+    #[OA\Response(
+        response: 200,
+        description: "Genre modifié avec succès",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 200),
+                new OA\Property(property: "message", type: "string", example: "Operation effectuée avec succes"),
+                new OA\Property(property: "data", type: "object"),
+                new OA\Property(property: "errors", type: "array", items: new OA\Items(type: "string"), example: []),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 400,
+        description: "Données invalides",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 400),
+                new OA\Property(property: "message", type: "string", example: "Validation failed"),
+                new OA\Property(property: "errors", type: "array", items: new OA\Items(type: "string"), example: ["Le libellé est obligatoire."]),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 300,
+        description: "Genre non trouvé",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "data", nullable: true, example: null),
+                new OA\Property(property: "message", type: "string", example: "Cette ressource est inexistante"),
+                new OA\Property(property: "status", type: "integer", example: 300),
+            ]
+        )
     )]
     #[OA\Tag(name: 'genre')]
     public function update(Request $request, Genre $genre, GenreRepository $genreRepository): Response
     {
         try {
-            $data = json_decode($request->getContent());
-            if ($genre != null) {
-
-                $genre->setLibelle($request->get('libelle'));
-                $genre->setCode($request->get('code'));
-                $genre->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
+            if ($genre !== null) {
+                $genre->setLibelle($request->request->get('libelle'));
+                $genre->setCode($request->request->get('code'));
+                $genre->setUpdatedBy($this->userRepository->find($request->request->get('userUpdate')));
                 $genre->setUpdatedAt(new \DateTime());
+
                 $errorResponse = $this->errorResponse($genre);
-
                 if ($errorResponse !== null) {
-                    return $errorResponse; // Retourne la réponse d'erreur si des erreurs sont présentes
-                } else {
-                    $genreRepository->add($genre, true);
+                    return $errorResponse;
                 }
-
-
-
-                // On retourne la confirmation
-                $response = $this->responseData($genre, 'group1', ['Content-Type' => 'application/json']);
+                $genreRepository->add($genre, true);
+                return $this->responseData($genre, 'group1', ['Content-Type' => 'application/json']);
             } else {
-                $this->setMessage("Cette ressource est inexsitante");
+                $this->setMessage("Cette ressource est inexistante");
                 $this->setStatusCode(300);
-                $response = $this->response('[]');
+                return $this->response('[]');
             }
         } catch (\Exception $exception) {
             $this->setMessage("");
-            $response = $this->response('[]');
+            return $this->response('[]');
         }
-        return $response;
     }
 
-    //const TAB_ID = 'parametre-tabs';
 
-    #[Route('/delete/{id}',  methods: ['DELETE'])]
-    /**
-     * permet de supprimer un(e) genre.
-     */
+    #[Route('/delete/{id}', methods: ['DELETE'])]
+    #[OA\Delete(
+        summary: "Supprimer un genre",
+        description: "Supprime définitivement un genre à partir de son identifiant."
+    )]
+    #[OA\Parameter(
+        name: 'id',
+        in: 'path',
+        required: true,
+        description: "Identifiant unique du genre à supprimer",
+        schema: new OA\Schema(type: 'integer', example: 1)
+    )]
     #[OA\Response(
         response: 200,
-        description: 'permet de supprimer un(e) genre',
+        description: "Genre supprimé avec succès",
         content: new OA\JsonContent(
-            type: 'array',
-            items: new OA\Items(ref: new Model(type: Genre::class, groups: ['full']))
-           
+            properties: [
+                new OA\Property(property: "data", nullable: true, example: null),
+                new OA\Property(property: "message", type: "string", example: "Operation effectuées avec success"),
+                new OA\Property(property: "status", type: "integer", example: 200),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 300,
+        description: "Genre non trouvé",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "data", nullable: true, example: null),
+                new OA\Property(property: "message", type: "string", example: "Cette ressource est inexistante"),
+                new OA\Property(property: "status", type: "integer", example: 300),
+            ]
         )
     )]
     #[OA\Tag(name: 'genre')]
-    //#[Security(name: 'Bearer')]
-    public function delete(Request $request, Genre $genre, GenreRepository $villeRepository): Response
+    public function delete(Request $request, Genre $genre, GenreRepository $repository): Response
     {
         try {
-
             if ($genre != null) {
-
-                $villeRepository->remove($genre, true);
-
-                // On retourne la confirmation
+                $repository->remove($genre, true);
                 $this->setMessage("Operation effectuées avec success");
                 $response = $this->response($genre);
             } else {
@@ -246,30 +343,47 @@ class ApiGenreController extends ApiInterface
         return $response;
     }
 
-    #[Route('/delete/all',  methods: ['DELETE'])]
-    /**
-     * Permet de supprimer plusieurs genre.
-     */
+    #[Route('/delete/all', methods: ['DELETE'])]
+    #[OA\Delete(
+        summary: "Supprimer plusieurs genres",
+        description: "Supprime une liste de genres en passant leurs IDs dans le corps de la requête.",
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(
+                        property: "ids",
+                        type: "array",
+                        description: "Liste des IDs à supprimer",
+                        items: new OA\Items(
+                            type: "object",
+                            properties: [new OA\Property(property: "id", type: "integer", example: 1)]
+                        ),
+                        example: [["id" => 1], ["id" => 2]]
+                    ),
+                ]
+            )
+        )
+    )]
     #[OA\Response(
         response: 200,
-        description: 'Returns the rewards of an user',
+        description: "Genres supprimés avec succès",
         content: new OA\JsonContent(
-            type: 'array',
-            items: new OA\Items(ref: new Model(type: Genre::class, groups: ['full']))
-          
+            properties: [
+                new OA\Property(property: "data", type: "string", example: "[]"),
+                new OA\Property(property: "message", type: "string", example: "Operation effectuées avec success"),
+                new OA\Property(property: "status", type: "integer", example: 200),
+            ]
         )
     )]
     #[OA\Tag(name: 'genre')]
-    public function deleteAll(Request $request, GenreRepository $villeRepository): Response
+    public function deleteAll(Request $request, GenreRepository $repository): Response
     {
         try {
-            $data = json_decode($request->getContent());
-
             foreach ($request->get('ids') as $key => $value) {
-                $genre = $villeRepository->find($value['id']);
-
+                $genre = $repository->find($value['id']);
                 if ($genre != null) {
-                    $villeRepository->remove($genre);
+                    $repository->remove($genre);
                 }
             }
             $this->setMessage("Operation effectuées avec success");

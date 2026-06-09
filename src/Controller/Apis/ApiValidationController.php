@@ -40,42 +40,74 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 #[Route('/api/validation')]
 class ApiValidationController extends ApiInterface
 {
-
-
     #[Route('/commande', methods: ['POST'])]
-    /**
-     * Permet de valider un(e) commande.
-     */
     #[OA\Post(
-        summary: "Authentification admin",
-        description: "Génère un token JWT pour les administrateurs.",
+        summary: "Faire avancer l'état d'une commande (workflow de validation)",
+        description: "Fait progresser une commande d'un état à l'autre. L'état actuel (`etat`) détermine la transition :\n\n| État actuel (`etat` envoyé) | Transition vers | Action |  \n|---|---|---|\n| `devis_attente` | `proforma_attente_validation` | Enregistre les montants |\n| `proforma_attente_validation` | `contrat_attente_creation` | Validation client |\n| `contrat_attente_creation` | `contrat_attente_validation` | Upload du fichier contrat |\n| `contrat_attente_validation` | `contrat_en_cours` | Signature finale |\n\nUn email de notification est envoyé au client à chaque étape.",
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\MediaType(
                 mediaType: "multipart/form-data",
                 schema: new OA\Schema(
+                    required: ['commandeId', 'etat', 'userId', 'userUpdate'],
                     properties: [
-                        new OA\Property(property: "montantLocation", type: "string"),
-                        new OA\Property(property: "montantTotal", type: "string"),
-                        new OA\Property(property: "montantPose", type: "string"),
-                        new OA\Property(property: "montantImpression", type: "string"),
-                        new OA\Property(property: "commentaire", type: "string"),
-                        new OA\Property(property: "fichierContrat", type: "string", format: "binary"),
-                        new OA\Property(property: "commandeId", type: "string"),
-                        new OA\Property(property: "userId", type: "string"),
-                        new OA\Property(property: "etat", type: "string"),
-                        new OA\Property(property: "userUpdate", type: "string"),
-
+                        new OA\Property(property: "commandeId", type: "integer", description: "ID de la commande à faire avancer", example: 5),
+                        new OA\Property(
+                            property: "etat",
+                            type: "string",
+                            description: "État ACTUEL de la commande (détermine la transition)",
+                            enum: ["devis_attente", "proforma_attente_validation", "contrat_attente_creation", "contrat_attente_validation"],
+                            example: "devis_attente"
+                        ),
+                        new OA\Property(property: "montantTotal", type: "number", description: "Montant total (requis si etat=devis_attente)", example: 3200000),
+                        new OA\Property(property: "montantLocation", type: "number", description: "Montant location (requis si etat=devis_attente)", example: 3000000),
+                        new OA\Property(property: "montantImpression", type: "number", description: "Montant impression (requis si etat=devis_attente)", example: 200000),
+                        new OA\Property(property: "montantPose", type: "number", description: "Montant pose (requis si etat=devis_attente)", example: 0),
+                        new OA\Property(property: "commentaire", type: "string", description: "Commentaire sur la validation", example: "Dossier conforme, montants validés."),
+                        new OA\Property(property: "fichierContrat", type: "string", format: "binary", description: "Fichier contrat PDF (requis si etat=contrat_attente_creation)"),
+                        new OA\Property(property: "userId", type: "integer", description: "ID de l'utilisateur client (pour l'envoi d'email)", example: 3),
+                        new OA\Property(property: "userUpdate", type: "integer", description: "ID de l'utilisateur admin qui effectue la validation", example: 1),
                     ],
                     type: "object"
                 )
             )
-        ),
-        responses: [
-            new OA\Response(response: 401, description: "Invalid credentials")
-        ]
+        )
     )]
-    #[OA\Tag(name: 'commande')]
+    #[OA\Response(
+        response: 200,
+        description: "Commande avancée avec succès vers l'état suivant",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 200),
+                new OA\Property(property: "message", type: "string", example: "Operation effectuée avec succes"),
+                new OA\Property(
+                    property: "data",
+                    type: "object",
+                    description: "Commande mise à jour",
+                    properties: [
+                        new OA\Property(property: "id", type: "integer", example: 5),
+                        new OA\Property(property: "etat", type: "string", example: "proforma_attente_validation"),
+                        new OA\Property(property: "montant", type: "number", example: 3200000),
+                        new OA\Property(property: "montantLocation", type: "number", example: 3000000),
+                        new OA\Property(property: "montantImpression", type: "number", example: 200000),
+                    ]
+                ),
+                new OA\Property(property: "errors", type: "array", items: new OA\Items(type: "string"), example: []),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 500,
+        description: "Erreur serveur (commande introuvable, erreur email, etc.)",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "data", nullable: true, example: null),
+                new OA\Property(property: "message", type: "string", example: ""),
+                new OA\Property(property: "status", type: "integer", example: 200),
+            ]
+        )
+    )]
+    #[OA\Tag(name: 'validation')]
     public function validationCommande(
         Request $request,
         CommandeRepository $commandeRepository,
@@ -87,18 +119,9 @@ class ApiValidationController extends ApiInterface
         $names = 'document_' . '01';
         $filePrefix  = str_slug($names);
         $filePath = $this->getUploadDir(self::UPLOAD_PATH, true);
-        // dd($filePath);
 
         try {
-
-            /*  - devis_attente                  
-            - proforma_attente_validation    
-            - contrat_attente_creation       
-            - contrat_attente_validation     
-            - contrat_en_cours               
-            - contrat_cloture  */
             $commande = $commandeRepository->find($request->get('commandeId'));
-
 
             switch ($request->get('etat')) {
                 case 'devis_attente':
@@ -107,7 +130,6 @@ class ApiValidationController extends ApiInterface
                     $commande->setMontantImpression($request->get('montantImpression'));
                     $commande->setMontantLocation($request->get('montantLocation'));
                     $commande->setMontantPose($request->get('montantPose'));
-
                     break;
 
                 case 'proforma_attente_validation':
@@ -129,7 +151,6 @@ class ApiValidationController extends ApiInterface
                     break;
 
                 default:
-                    # code...
                     break;
             }
             $commande->setUpdatedAt(new DateTime());
@@ -146,13 +167,11 @@ class ApiValidationController extends ApiInterface
             $validationRepository->add($validation, true);
             $message = "";
 
-
             if ($request->get('etat') == "devis_attente") {
                 $message = "Votre dossier vient de passer l'etape d'acceptation et est en séance d'analyse";
             } elseif ($request->get('etat') == "proforma_attente_validation") {
-                $message = "Votre dossier vient de passer l'etape d'acceptation et est en séance d'analyse"; ;
+                $message = "Votre dossier vient de passer l'etape d'acceptation et est en séance d'analyse";
             } elseif ($request->get('etat') == "contrat_attente_creation") {
-
                 $message = "Votre dossier a été jugé conforme et est désormais en attente de validation finale. Vous recevrez une notification dès que le processus sera complété.";
             } elseif ($request->get('etat') == "contrat_attente_validation") {
                 $message = "Votre dossier a été jugé conforme et est désormais en attente de validation finale. Vous recevrez une notification dès que le processus sera complété.";
@@ -172,8 +191,6 @@ class ApiValidationController extends ApiInterface
 
             $context = compact('info_user');
 
-            // TO DO
-
             $sendMailService->send(
                 'tester@myonmci.ci',
                 $email,
@@ -188,7 +205,6 @@ class ApiValidationController extends ApiInterface
             $response = $this->response('[]');
         }
 
-        // On envoie la réponse
         return $response;
     }
 
@@ -204,74 +220,96 @@ class ApiValidationController extends ApiInterface
     }
 
 
-
     #[Route('/avec/impression', methods: ['POST'])]
-    /**
-     * Permet de valider avec impression.
-     */
     #[OA\Post(
-        summary: "Authentification admin",
-        description: "Génère un token JWT pour les administrateurs.",
+        summary: "Avancer le workflow d'une commande AVEC impression (8 étapes)",
+        description: "Permet de faire progresser le traitement d'une commande avec impression visuelle. Chaque appel avance l'étape d'une unité. Envoyer l'`etape` actuelle pour qu'elle passe à la suivante.\n\n| Étape envoyée | Champs requis | Passe à |\n|---|---|---|\n| `etape_1` | dateEnvoiVisuel, commentaireEnvoiVisuel, envoiVisuel (fichier) | etape_2 |\n| `etape_2` | dateImpressionBat, commentaireImpressionBat | etape_3 |\n| `etape_3` | dateValidationBat, commentaireValidationBat | etape_4 |\n| `etape_4` | dateImpressionvisuelle, commentaireImpressionVisuelle, imageImpressionVisuelle (fichier) | etape_5 |\n| `etape_5` | dateProgrammationPose, dateDebutPose, dateFinPose, dateDebutAlerte, commentaireProgrammationPose | etape_6 |\n| `etape_6` | dateRapportPose, commentairePose, rapportPose (fichier) | etape_7 |\n| `etape_7` | dateRapportDepose, commentaireRapportDepose, rapportDepose (fichier) | etape_8 |\n| `etape_8` | dateFinalisation, commentaireFinalisation | → commande clôturée |",
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\MediaType(
                 mediaType: "multipart/form-data",
                 schema: new OA\Schema(
+                    required: ['commandeId', 'etape', 'userUpdate'],
                     properties: [
-                        new OA\Property(property: "dateEnvoiVisuel", type: "date"),
-                        new OA\Property(property: "commentaireEnvoiVisuel", type: "string"),
-                        new OA\Property(property: "envoiVisuel", type: "string", format: "binary"),
+                        new OA\Property(property: "commandeId", type: "integer", description: "ID de la commande", example: 5),
+                        new OA\Property(property: "etape", type: "string", description: "Étape actuelle à valider", enum: ["etape_1", "etape_2", "etape_3", "etape_4", "etape_5", "etape_6", "etape_7", "etape_8"], example: "etape_1"),
+                        new OA\Property(property: "userUpdate", type: "integer", description: "ID de l'utilisateur qui effectue l'action", example: 1),
 
+                        new OA\Property(property: "dateEnvoiVisuel", type: "string", format: "date", description: "[etape_1] Date d'envoi du visuel", example: "2025-01-20"),
+                        new OA\Property(property: "commentaireEnvoiVisuel", type: "string", description: "[etape_1] Commentaire", example: "Visuel envoyé pour validation"),
+                        new OA\Property(property: "envoiVisuel", type: "string", format: "binary", description: "[etape_1] Fichier du visuel envoyé"),
 
-                        new OA\Property(property: "dateImpressionBat", type: "date"),
-                        new OA\Property(property: "commentaireImpressionBat", type: "string"),
+                        new OA\Property(property: "dateImpressionBat", type: "string", format: "date", description: "[etape_2] Date impression BAT"),
+                        new OA\Property(property: "commentaireImpressionBat", type: "string", description: "[etape_2] Commentaire impression BAT"),
 
+                        new OA\Property(property: "dateValidationBat", type: "string", format: "date", description: "[etape_3] Date validation BAT"),
+                        new OA\Property(property: "commentaireValidationBat", type: "string", description: "[etape_3] Commentaire validation BAT"),
 
-                        new OA\Property(property: "dateValidationBat", type: "date"),
-                        new OA\Property(property: "commentaireValidationBat", type: "string"),
+                        new OA\Property(property: "dateImpressionvisuelle", type: "string", format: "date", description: "[etape_4] Date impression visuelle"),
+                        new OA\Property(property: "commentaireImpressionVisuelle", type: "string", description: "[etape_4] Commentaire"),
+                        new OA\Property(property: "imageImpressionVisuelle", type: "string", format: "binary", description: "[etape_4] Image de l'impression visuelle"),
 
-                        new OA\Property(property: "dateImpressionvisuelle", type: "date"),
-                        new OA\Property(property: "commentaireImpressionVisuelle", type: "string"),
-                        new OA\Property(property: "imageImpressionVisuelle", type: "string", format: "binary"),
+                        new OA\Property(property: "dateProgrammationPose", type: "string", format: "date", description: "[etape_5] Date de programmation de la pose"),
+                        new OA\Property(property: "commentaireProgrammationPose", type: "string", description: "[etape_5] Commentaire pose"),
+                        new OA\Property(property: "dateDebutPose", type: "string", format: "date", description: "[etape_5] Date début de pose"),
+                        new OA\Property(property: "dateFinPose", type: "string", format: "date", description: "[etape_5] Date fin de pose"),
+                        new OA\Property(property: "dateDebutAlerte", type: "string", format: "date", description: "[etape_5] Date de début d'alerte"),
 
-                        new OA\Property(property: "dateProgrammationPose", type: "date"),
-                        new OA\Property(property: "commentaireProgrammationPose", type: "string"),
-                        new OA\Property(property: "dateDebutPose", type: "date"),
-                        new OA\Property(property: "dateFinPose", type: "date"),
-                        new OA\Property(property: "dateDebutAlerte", type: "date"),
+                        new OA\Property(property: "dateRapportPose", type: "string", format: "date", description: "[etape_6] Date du rapport de pose"),
+                        new OA\Property(property: "commentairePose", type: "string", description: "[etape_6] Commentaire pose"),
+                        new OA\Property(property: "rapportPose", type: "string", format: "binary", description: "[etape_6] Fichier rapport de pose"),
 
+                        new OA\Property(property: "dateRapportDepose", type: "string", format: "date", description: "[etape_7] Date du rapport de dépose"),
+                        new OA\Property(property: "commentaireRapportDepose", type: "string", description: "[etape_7] Commentaire dépose"),
+                        new OA\Property(property: "rapportDepose", type: "string", format: "binary", description: "[etape_7] Fichier rapport de dépose"),
 
-                        new OA\Property(property: "dateRapportPose", type: "date"),
-                        new OA\Property(property: "commentairePose", type: "string"),
-                        new OA\Property(property: "rapportPose", type: "string", format: "binary"),
-
-
-                        new OA\Property(property: "rapportDepose", type: "string", format: "binary"),
-                        new OA\Property(property: "dateRapportDepose", type: "date"),
-                        new OA\Property(property: "commentaireRapportDepose", type: "string"),
-
-
-                        new OA\Property(property: "dateFinalisation", type: "date"),
-                        new OA\Property(property: "commentaireFinalisation", type: "string"),
-
-
-                        new OA\Property(property: "etape", type: "string"),
-                        new OA\Property(property: "commandeId", type: "string"),
-                        new OA\Property(property: "userUpdate", type: "string"),
-
+                        new OA\Property(property: "dateFinalisation", type: "string", format: "date", description: "[etape_8] Date de finalisation"),
+                        new OA\Property(property: "commentaireFinalisation", type: "string", description: "[etape_8] Commentaire finalisation"),
                     ],
                     type: "object"
                 )
             )
-        ),
-        responses: [
-            new OA\Response(response: 401, description: "Invalid credentials")
-        ]
+        )
+    )]
+    #[OA\Response(
+        response: 200,
+        description: "Étape validée avec succès — retourne l'objet AvecImpression mis à jour",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 200),
+                new OA\Property(property: "message", type: "string", example: "Operation effectuée avec succes"),
+                new OA\Property(
+                    property: "data",
+                    type: "object",
+                    description: "Objet AvecImpression mis à jour",
+                    properties: [
+                        new OA\Property(property: "id", type: "integer", example: 2),
+                        new OA\Property(property: "etape", type: "string", description: "Étape suivante (après la transition)", example: "etape_2"),
+                        new OA\Property(property: "dateEnvoiVisuel", type: "string", format: "date-time", nullable: true, example: "2025-01-20T00:00:00+00:00"),
+                        new OA\Property(property: "commentaireEnvoiVisuel", type: "string", nullable: true),
+                        new OA\Property(property: "envoiVisuel", type: "object", nullable: true, properties: [
+                            new OA\Property(property: "path", type: "string", example: "media_deeps/visuel.jpg"),
+                        ]),
+                    ]
+                ),
+                new OA\Property(property: "errors", type: "array", items: new OA\Items(type: "string"), example: []),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 500,
+        description: "Commande non trouvée ou erreur interne",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "data", nullable: true, example: null),
+                new OA\Property(property: "message", type: "string", example: "Erreur : Commande non trouvée"),
+                new OA\Property(property: "status", type: "integer", example: 200),
+            ]
+        )
     )]
     #[OA\Tag(name: 'validation')]
-    public function validationAvecImpression(Request $request,FaceRepository $faceRepository, AvecImpressionRepository $avecImpressionRepository, CommandeRepository $commandeRepository): Response
+    public function validationAvecImpression(Request $request, FaceRepository $faceRepository, AvecImpressionRepository $avecImpressionRepository, CommandeRepository $commandeRepository): Response
     {
-
         try {
             $commandeId = $request->get('commandeId');
             $etape = $request->get('etape');
@@ -284,12 +322,9 @@ class ApiValidationController extends ApiInterface
                 throw new \Exception('Commande non trouvée');
             }
 
-            // Préparation des infos de fichier
             $filePrefix = str_slug('document_01');
             $filePath = $this->getUploadDir(self::UPLOAD_PATH, true);
 
-            // Champs communs
-            
             $avecImpression->setUpdatedAt(new \DateTime());
             $avecImpression->setUpdatedBy($this->userRepository->find($userId));
 
@@ -307,14 +342,12 @@ class ApiValidationController extends ApiInterface
                     $avecImpression->setDateImpressionBat(new \DateTime($request->get('dateImpressionBat')));
                     $avecImpression->setCommentaireImpressionBat($request->get('commentaireImpressionBat'));
                     $avecImpression->setEtape("etape_3");
-
                     break;
 
                 case 'etape_3':
                     $avecImpression->setDateValidationBat(new \DateTime($request->get('dateValidationBat')));
                     $avecImpression->setCommentaireValidationBat($request->get('commentaireValidationBat'));
                     $avecImpression->setEtape("etape_4");
-
                     break;
 
                 case 'etape_4':
@@ -324,7 +357,6 @@ class ApiValidationController extends ApiInterface
                         $avecImpression->setImageImpressionVisuelle($fichier);
                     });
                     $avecImpression->setEtape("etape_5");
-
                     break;
 
                 case 'etape_5':
@@ -334,7 +366,6 @@ class ApiValidationController extends ApiInterface
                     $avecImpression->setDateFinPose(new \DateTime($request->get('dateFinPose')));
                     $avecImpression->setDateDebutAlerte(new \DateTime($request->get('dateDebutAlerte')));
                     $avecImpression->setEtape("etape_6");
-
                     break;
 
                 case 'etape_6':
@@ -344,7 +375,6 @@ class ApiValidationController extends ApiInterface
                         $avecImpression->setRapportPose($fichier);
                     });
                     $avecImpression->setEtape("etape_7");
-
                     break;
 
                 case 'etape_7':
@@ -354,7 +384,6 @@ class ApiValidationController extends ApiInterface
                         $avecImpression->setRapportDepose($fichier);
                     });
                     $avecImpression->setEtape("etape_8");
-
                     break;
 
                 case 'etape_8':
@@ -366,7 +395,7 @@ class ApiValidationController extends ApiInterface
                     foreach ($allLigne as $ligne) {
                         $face = $ligne->getFace();
                         $face->setEtat(Face::ETAT['Encours']);
-                        $faceRepository->add($face,true);
+                        $faceRepository->add($face, true);
                     }
 
                     $commandeRepository->add($commande, true);
@@ -396,67 +425,87 @@ class ApiValidationController extends ApiInterface
     }
 
     #[Route('/sans/impression', methods: ['POST'])]
-    /**
-     * Retourne la liste des civilites.
-     * 
-     */
     #[OA\Post(
-        summary: "Authentification admin",
-        description: "Génère un token JWT pour les administrateurs.",
+        summary: "Avancer le workflow d'une commande SANS impression (5 étapes)",
+        description: "Permet de faire progresser le traitement d'une commande sans impression (avec bâche client). Chaque appel avance l'étape d'une unité.\n\n| Étape envoyée | Champs requis | Passe à |\n|---|---|---|\n| `etape_1` | dateEnvoiBache, commentaireEnvoiBache, visualBache (fichier) | etape_2 |\n| `etape_2` | dateProgrammationPose, commentaireProgrammationPose | etape_3 |\n| `etape_3` | dateRapportPose, commentRapportPose, rapportPose (fichier) | etape_4 |\n| `etape_4` | dateRapportDepose, commentaireRapportDepose, rapportDepose (fichier) | etape_5 |\n| `etape_5` | dateFinalisation, commentaireFinalisation | → commande clôturée |",
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\MediaType(
                 mediaType: "multipart/form-data",
                 schema: new OA\Schema(
+                    required: ['commandeId', 'etape', 'userUpdate'],
                     properties: [
-                        //ETAPE 1
-                        new OA\Property(property: "dateEnvoiBache", type: "date"),
-                        new OA\Property(property: "visualBache", type: "string"),
-                        new OA\Property(property: "commentaireEnvoiBache", type: "string", format: "binary"),
+                        new OA\Property(property: "commandeId", type: "integer", description: "ID de la commande", example: 5),
+                        new OA\Property(property: "etape", type: "string", description: "Étape actuelle à valider", enum: ["etape_1", "etape_2", "etape_3", "etape_4", "etape_5"], example: "etape_1"),
+                        new OA\Property(property: "userUpdate", type: "integer", description: "ID de l'utilisateur qui effectue l'action", example: 1),
 
-                        //ETAPE 2
-                        new OA\Property(property: "dateProgrammationPose", type: "date"),
-                        new OA\Property(property: "commentaireProgrammationPose", type: "string"),
+                        new OA\Property(property: "dateEnvoiBache", type: "string", format: "date", description: "[etape_1] Date d'envoi de la bâche", example: "2025-01-20"),
+                        new OA\Property(property: "commentaireEnvoiBache", type: "string", description: "[etape_1] Commentaire sur la bâche"),
+                        new OA\Property(property: "visualBache", type: "string", format: "binary", description: "[etape_1] Fichier visuel de la bâche"),
 
-                        //ETAPE 3
+                        new OA\Property(property: "dateProgrammationPose", type: "string", format: "date", description: "[etape_2] Date de programmation de la pose"),
+                        new OA\Property(property: "commentaireProgrammationPose", type: "string", description: "[etape_2] Commentaire"),
 
-                        new OA\Property(property: "dateRapportPose", type: "date"),
-                        new OA\Property(property: "commentRapportPose", type: "string"),
-                        new OA\Property(property: "rapportPose", type: "string", format: "binary"),
+                        new OA\Property(property: "dateRapportPose", type: "string", format: "date", description: "[etape_3] Date du rapport de pose"),
+                        new OA\Property(property: "commentRapportPose", type: "string", description: "[etape_3] Commentaire rapport pose"),
+                        new OA\Property(property: "rapportPose", type: "string", format: "binary", description: "[etape_3] Fichier rapport de pose"),
 
-                        //ETAPE 4
+                        new OA\Property(property: "dateRapportDepose", type: "string", format: "date", description: "[etape_4] Date du rapport de dépose"),
+                        new OA\Property(property: "commentaireRapportDepose", type: "string", description: "[etape_4] Commentaire"),
+                        new OA\Property(property: "rapportDepose", type: "string", format: "binary", description: "[etape_4] Fichier rapport de dépose"),
 
-                        new OA\Property(property: "dateRapportDepose", type: "date"),
-                        new OA\Property(property: "commentaireRapportDepose", type: "string"),
-                        new OA\Property(property: "rapportDepose", type: "string", format: "binary"),
-
-                        //ETAPE 5
-
-                        new OA\Property(property: "dateFinalisation", type: "date"),
-                        new OA\Property(property: "commentaireFinalisation", type: "string"),
-
-
-                        new OA\Property(property: "etape", type: "string"),
-                        new OA\Property(property: "commandeId", type: "string"),
-                        new OA\Property(property: "userUpdate", type: "string"),
-
+                        new OA\Property(property: "dateFinalisation", type: "string", format: "date", description: "[etape_5] Date de finalisation"),
+                        new OA\Property(property: "commentaireFinalisation", type: "string", description: "[etape_5] Commentaire finalisation"),
                     ],
                     type: "object"
                 )
             )
         )
     )]
+    #[OA\Response(
+        response: 200,
+        description: "Étape validée avec succès — retourne l'objet SansImpression mis à jour",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 200),
+                new OA\Property(property: "message", type: "string", example: "Operation effectuée avec succes"),
+                new OA\Property(
+                    property: "data",
+                    type: "object",
+                    description: "Objet SansImpression mis à jour",
+                    properties: [
+                        new OA\Property(property: "id", type: "integer", example: 3),
+                        new OA\Property(property: "etape", type: "string", description: "Étape suivante (après la transition)", example: "etape_2"),
+                        new OA\Property(property: "dateEnvoiBache", type: "string", format: "date-time", nullable: true, example: "2025-01-20T00:00:00+00:00"),
+                        new OA\Property(property: "visualBache", type: "object", nullable: true, properties: [
+                            new OA\Property(property: "path", type: "string", example: "media_deeps/bache.jpg"),
+                        ]),
+                    ]
+                ),
+                new OA\Property(property: "errors", type: "array", items: new OA\Items(type: "string"), example: []),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 500,
+        description: "Commande non trouvée ou erreur interne",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "data", nullable: true, example: null),
+                new OA\Property(property: "message", type: "string", example: "Erreur : Commande non trouvée"),
+                new OA\Property(property: "status", type: "integer", example: 200),
+            ]
+        )
+    )]
     #[OA\Tag(name: 'validation')]
-    // #[Security(name: 'Bearer')]
-    public function sansImpression(Request $request,FaceRepository $faceRepository, SansImpressionRepository $sansImpressionRepository, CommandeRepository $commandeRepository): Response
+    public function sansImpression(Request $request, FaceRepository $faceRepository, SansImpressionRepository $sansImpressionRepository, CommandeRepository $commandeRepository): Response
     {
         try {
             $commandeId = $request->get('commandeId');
             $etape = $request->get('etape');
             $userUpdateId = $request->get('userUpdate');
             $commande = $commandeRepository->find($commandeId);
-            $sansImpression =$commande->getSansImpression();
-        
+            $sansImpression = $commande->getSansImpression();
 
             $filePrefix = str_slug('document_01');
             $filePath = $this->getUploadDir(self::UPLOAD_PATH, true);
@@ -465,7 +514,6 @@ class ApiValidationController extends ApiInterface
                 throw new \Exception('Commande non trouvée');
             }
 
-            // Données communes
             $sansImpression->setUpdatedAt(new \DateTime());
             $sansImpression->setUpdatedBy($this->userRepository->find($userUpdateId));
 
@@ -476,8 +524,7 @@ class ApiValidationController extends ApiInterface
                     $this->updateFile($request->files->get('visualBache'), $filePath, $filePrefix, function ($fichier) use ($sansImpression) {
                         $sansImpression->setVisualBache($fichier);
                     });
-            $sansImpression->setEtape("etape_2");
-
+                    $sansImpression->setEtape("etape_2");
                     break;
 
                 case 'etape_2':
@@ -513,7 +560,7 @@ class ApiValidationController extends ApiInterface
                     foreach ($allLigne as $ligne) {
                         $face = $ligne->getFace();
                         $face->setEtat(Face::ETAT['Encours']);
-                        $faceRepository->add($face,true);
+                        $faceRepository->add($face, true);
                     }
 
                     $commandeRepository->add($commande, true);

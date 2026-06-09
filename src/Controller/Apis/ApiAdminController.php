@@ -24,63 +24,134 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 #[Route('/api/admin')]
 class ApiAdminController extends ApiInterface
 {
-
+    /** Schéma de réponse succès réutilisable pour un admin */
+    private function adminSuccessSchema(): OA\JsonContent
+    {
+        return new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 200),
+                new OA\Property(property: "message", type: "string", example: "Operation effectuée avec succes"),
+                new OA\Property(
+                    property: "data",
+                    type: "object",
+                    properties: [
+                        new OA\Property(property: "id", type: "integer", example: 1),
+                        new OA\Property(property: "nom", type: "string", example: "KONATÉ"),
+                        new OA\Property(property: "prenoms", type: "string", example: "Hamédine"),
+                        new OA\Property(property: "contact", type: "string", example: "+2250101020304"),
+                        new OA\Property(property: "genre", type: "object", properties: [new OA\Property(property: "id", type: "integer"), new OA\Property(property: "libelle", type: "string")]),
+                        new OA\Property(property: "civilite", type: "object", properties: [new OA\Property(property: "id", type: "integer"), new OA\Property(property: "libelle", type: "string")]),
+                        new OA\Property(property: "fonction", type: "object", properties: [new OA\Property(property: "id", type: "integer"), new OA\Property(property: "libelle", type: "string")]),
+                    ]
+                ),
+                new OA\Property(property: "errors", type: "array", items: new OA\Items(type: "string"), example: []),
+            ]
+        );
+    }
 
 
     #[Route('/', methods: ['GET'])]
-    /**
-     * Retourne la liste des admins.
-     * 
-     */
+    #[OA\Get(
+        summary: "Lister tous les admins",
+        description: "Retourne la liste complète de tous les administrateurs enregistrés."
+    )]
     #[OA\Response(
         response: 200,
-        description: 'Returns the rewards of a user',
+        description: "Liste des admins récupérée avec succès",
         content: new OA\JsonContent(
-            type: 'array',
-            items: new OA\Items(ref: new Model(type: Admin::class, groups: ['full']))
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 200),
+                new OA\Property(property: "message", type: "string", example: "Operation effectuée avec succes"),
+                new OA\Property(
+                    property: "data",
+                    type: "array",
+                    items: new OA\Items(
+                        properties: [
+                            new OA\Property(property: "id", type: "integer", example: 1),
+                            new OA\Property(property: "nom", type: "string", example: "KONATÉ"),
+                            new OA\Property(property: "prenoms", type: "string", example: "Hamédine"),
+                            new OA\Property(property: "contact", type: "string", example: "+2250101020304"),
+                        ]
+                    )
+                ),
+                new OA\Property(property: "errors", type: "array", items: new OA\Items(type: "string"), example: []),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 500,
+        description: "Erreur interne du serveur",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 500),
+                new OA\Property(property: "message", type: "string", example: "Erreur interne du serveur"),
+                new OA\Property(property: "data", type: "string", nullable: true, example: null),
+            ]
         )
     )]
     #[OA\Tag(name: 'admin')]
-    // #[Security(name: 'Bearer')]
     public function index(AdminRepository $adminRepository): Response
     {
         try {
-
             $admins = $adminRepository->findAll();
-
-          
-
             $response =  $this->responseData($admins, 'group1', ['Content-Type' => 'application/json']);
         } catch (\Exception $exception) {
             $this->setMessage("");
             $response = $this->response('[]');
         }
 
-        // On envoie la réponse
         return $response;
     }
 
 
     #[Route('/get/one/{id}', methods: ['GET'])]
-    /**
-     * Affiche un(e) admin en offrant un identifiant.
-     */
-    #[OA\Response(
-        response: 200,
-        description: 'Affiche un(e) admin en offrant un identifiant',
-        content: new OA\JsonContent(
-            type: 'array',
-            items: new OA\Items(ref: new Model(type: Admin::class, groups: ['full']))
-            
-        )
+    #[OA\Get(
+        summary: "Obtenir un admin par ID",
+        description: "Retourne les détails d'un administrateur à partir de son identifiant."
     )]
     #[OA\Parameter(
-        name: 'code',
-        in: 'query',
-        schema: new OA\Schema(type: 'string')
+        name: 'id',
+        in: 'path',
+        required: true,
+        description: "Identifiant unique de l'admin",
+        schema: new OA\Schema(type: 'integer', example: 1)
+    )]
+    #[OA\Response(
+        response: 200,
+        description: "Admin trouvé",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 200),
+                new OA\Property(property: "message", type: "string", example: "Operation effectuée avec succes"),
+                new OA\Property(
+                    property: "data",
+                    type: "object",
+                    properties: [
+                        new OA\Property(property: "id", type: "integer", example: 1),
+                        new OA\Property(property: "nom", type: "string", example: "KONATÉ"),
+                        new OA\Property(property: "prenoms", type: "string", example: "Hamédine"),
+                        new OA\Property(property: "contact", type: "string", example: "+2250101020304"),
+                        new OA\Property(property: "genre", type: "object", properties: [new OA\Property(property: "id", type: "integer"), new OA\Property(property: "libelle", type: "string")]),
+                        new OA\Property(property: "civilite", type: "object", properties: [new OA\Property(property: "id", type: "integer"), new OA\Property(property: "libelle", type: "string")]),
+                        new OA\Property(property: "fonction", type: "object", properties: [new OA\Property(property: "id", type: "integer"), new OA\Property(property: "libelle", type: "string")]),
+                    ]
+                ),
+                new OA\Property(property: "errors", type: "array", items: new OA\Items(type: "string"), example: []),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 300,
+        description: "Admin non trouvé (identifiant inexistant)",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "data", type: "string", nullable: true, example: null),
+                new OA\Property(property: "message", type: "string", example: "Cette ressource est inexistante"),
+                new OA\Property(property: "status", type: "integer", example: 300),
+            ]
+        )
     )]
     #[OA\Tag(name: 'admin')]
-    //#[Security(name: 'Bearer')]
     public function getOne(?Admin $admin)
     {
         try {
@@ -96,49 +167,69 @@ class ApiAdminController extends ApiInterface
             $response = $this->response('[]');
         }
 
-
         return $response;
     }
 
 
-    #[Route('/create',  methods: ['POST'])]
-    /**
-     * Permet de créer un(e) admin.
-     */
+    #[Route('/create', methods: ['POST'])]
     #[OA\Post(
-        summary: "Authentification admin",
-        description: "Génère un token JWT pour les administrateurs.",
+        summary: "Créer un nouvel administrateur",
+        description: "Crée un nouvel administrateur avec son compte utilisateur associé (email + mot de passe).",
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
+                required: ['nom', 'prenoms', 'email', 'password', 'contact', 'genre', 'civilite', 'fonction', 'userUpdate'],
                 properties: [
-                    new OA\Property(property: "genre", type: "string"),
-                    new OA\Property(property: "civilite", type: "string"),
-                    new OA\Property(property: "nom", type: "string"),
-                    new OA\Property(property: "prenoms", type: "string"),
-                    new OA\Property(property: "fonction", type: "string"),
-                    new OA\Property(property: "contact", type: "string"),
-
-                    new OA\Property(property: "email", type: "string"),
-                    new OA\Property(property: "password", type: "string"),
-                    new OA\Property(property: "userUpdate", type: "string"),
-
+                    new OA\Property(property: "genre", type: "integer", description: "ID du genre", example: 1),
+                    new OA\Property(property: "civilite", type: "integer", description: "ID de la civilité", example: 1),
+                    new OA\Property(property: "nom", type: "string", example: "KONATÉ"),
+                    new OA\Property(property: "prenoms", type: "string", example: "Hamédine"),
+                    new OA\Property(property: "fonction", type: "integer", description: "ID de la fonction", example: 2),
+                    new OA\Property(property: "contact", type: "string", example: "+2250101020304"),
+                    new OA\Property(property: "email", type: "string", format: "email", example: "admin@example.com"),
+                    new OA\Property(property: "password", type: "string", format: "password", example: "motdepasse123"),
+                    new OA\Property(property: "userUpdate", type: "integer", description: "ID de l'utilisateur qui effectue l'opération", example: 1),
                 ],
                 type: "object"
             )
-        ),
-        responses: [
-            new OA\Response(response: 401, description: "Invalid credentials")
-        ]
+        )
+    )]
+    #[OA\Response(
+        response: 200,
+        description: "Administrateur créé avec succès",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 200),
+                new OA\Property(property: "message", type: "string", example: "Operation effectuée avec succes"),
+                new OA\Property(
+                    property: "data",
+                    type: "object",
+                    properties: [
+                        new OA\Property(property: "id", type: "integer", example: 5),
+                        new OA\Property(property: "nom", type: "string", example: "KONATÉ"),
+                        new OA\Property(property: "prenoms", type: "string", example: "Hamédine"),
+                        new OA\Property(property: "contact", type: "string", example: "+2250101020304"),
+                    ]
+                ),
+                new OA\Property(property: "errors", type: "array", items: new OA\Items(type: "string"), example: []),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 400,
+        description: "Données invalides ou champs manquants",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 400),
+                new OA\Property(property: "message", type: "string", example: "Validation failed"),
+                new OA\Property(property: "errors", type: "array", items: new OA\Items(type: "string"), example: ["Le nom est obligatoire.", "L'email est invalide."]),
+            ]
+        )
     )]
     #[OA\Tag(name: 'admin')]
-    public function create(Request $request, AdminRepository $adminRepository,GenreRepository $genreRepository,CiviliteRepository $civiliteRepository,FonctionRepository $fonctionRepository,UserRepository $userRepository): Response
+    public function create(Request $request, AdminRepository $adminRepository, GenreRepository $genreRepository, CiviliteRepository $civiliteRepository, FonctionRepository $fonctionRepository, UserRepository $userRepository): Response
     {
-
         $data = json_decode($request->getContent(), true);
-
-  
-
 
         $admin = new Admin();
         $admin->setGenre($genreRepository->find($request->get('genre')));
@@ -154,25 +245,21 @@ class ApiAdminController extends ApiInterface
 
         $errorResponse = $this->errorResponse($admin);
         if ($errorResponse !== null) {
-            return $errorResponse; // Retourne la réponse d'erreur si des erreurs sont présentes
+            return $errorResponse;
         } else {
-
             $user = new User();
             $user->setEmail($request->get('email'));
             $user->setRoles(['ROLE_ADMIN']);
             $user->setPassword($this->hasher->hashPassword($user, $request->get('password')));
 
-    
             $errorResponseUser = $this->errorResponse($admin);
-            
             if ($errorResponseUser !== null) {
-                return $errorResponseUser; // Retourne la réponse d'erreur si des erreurs sont présentes
-            }else {
+                return $errorResponseUser;
+            } else {
                 $adminRepository->add($admin, true);
                 $user->setPersonne($admin);
                 $userRepository->add($user, true);
             }
-
         }
 
         return $this->responseData($admin, 'group1', ['Content-Type' => 'application/json']);
@@ -181,31 +268,67 @@ class ApiAdminController extends ApiInterface
 
     #[Route('/update/{id}', methods: ['PUT', 'POST'])]
     #[OA\Post(
-        summary: "Creation de admin",
-        description: "Permet de créer un admin.",
+        summary: "Modifier un administrateur existant",
+        description: "Met à jour les informations d'un administrateur identifié par son ID.",
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: "genre", type: "string"),
-                    new OA\Property(property: "civilite", type: "string"),
-                    new OA\Property(property: "nom", type: "string"),
-                    new OA\Property(property: "prenoms", type: "string"),
-                    new OA\Property(property: "fonction", type: "string"),
-                    new OA\Property(property: "contact", type: "string"),
-                
-                    new OA\Property(property: "userUpdate", type: "string"),
-
+                    new OA\Property(property: "genre", type: "integer", description: "ID du genre", example: 1),
+                    new OA\Property(property: "civilite", type: "integer", description: "ID de la civilité", example: 1),
+                    new OA\Property(property: "nom", type: "string", example: "KONATÉ"),
+                    new OA\Property(property: "prenoms", type: "string", example: "Hamédine"),
+                    new OA\Property(property: "fonction", type: "integer", description: "ID de la fonction", example: 2),
+                    new OA\Property(property: "contact", type: "string", example: "+2250101020304"),
+                    new OA\Property(property: "userUpdate", type: "integer", description: "ID de l'utilisateur qui effectue la modification", example: 1),
                 ],
                 type: "object"
             )
-        ),
-        responses: [
-            new OA\Response(response: 401, description: "Invalid credentials")
-        ]
+        )
+    )]
+    #[OA\Parameter(
+        name: 'id',
+        in: 'path',
+        required: true,
+        description: "Identifiant unique de l'admin à modifier",
+        schema: new OA\Schema(type: 'integer', example: 1)
+    )]
+    #[OA\Response(
+        response: 200,
+        description: "Administrateur modifié avec succès",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 200),
+                new OA\Property(property: "message", type: "string", example: "Operation effectuée avec succes"),
+                new OA\Property(property: "data", type: "object"),
+                new OA\Property(property: "errors", type: "array", items: new OA\Items(type: "string"), example: []),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 400,
+        description: "Données invalides",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 400),
+                new OA\Property(property: "message", type: "string", example: "Validation failed"),
+                new OA\Property(property: "errors", type: "array", items: new OA\Items(type: "string"), example: ["Le nom est obligatoire."]),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 300,
+        description: "Admin non trouvé",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "data", type: "string", nullable: true, example: null),
+                new OA\Property(property: "message", type: "string", example: "Cette ressource est inexistante"),
+                new OA\Property(property: "status", type: "integer", example: 300),
+            ]
+        )
     )]
     #[OA\Tag(name: 'admin')]
-    public function update(Request $request, Admin $admin, AdminRepository $adminRepository,GenreRepository $genreRepository,CiviliteRepository $civiliteRepository,FonctionRepository $fonctionRepository): Response
+    public function update(Request $request, Admin $admin, AdminRepository $adminRepository, GenreRepository $genreRepository, CiviliteRepository $civiliteRepository, FonctionRepository $fonctionRepository): Response
     {
         try {
             $data = json_decode($request->getContent());
@@ -223,14 +346,11 @@ class ApiAdminController extends ApiInterface
                 $errorResponse = $this->errorResponse($admin);
 
                 if ($errorResponse !== null) {
-                    return $errorResponse; // Retourne la réponse d'erreur si des erreurs sont présentes
+                    return $errorResponse;
                 } else {
                     $adminRepository->add($admin, true);
                 }
 
-
-
-                // On retourne la confirmation
                 $response = $this->responseData($admin, 'group1', ['Content-Type' => 'application/json']);
             } else {
                 $this->setMessage("Cette ressource est inexsitante");
@@ -244,32 +364,47 @@ class ApiAdminController extends ApiInterface
         return $response;
     }
 
-    //const TAB_ID = 'parametre-tabs';
 
-    #[Route('/delete/{id}',  methods: ['DELETE'])]
-    /**
-     * permet de supprimer un(e) admin.
-     */
+    #[Route('/delete/{id}', methods: ['DELETE'])]
+    #[OA\Delete(
+        summary: "Supprimer un administrateur",
+        description: "Supprime définitivement un administrateur à partir de son ID."
+    )]
+    #[OA\Parameter(
+        name: 'id',
+        in: 'path',
+        required: true,
+        description: "Identifiant unique de l'admin à supprimer",
+        schema: new OA\Schema(type: 'integer', example: 1)
+    )]
     #[OA\Response(
         response: 200,
-        description: 'permet de supprimer un(e) admin',
+        description: "Administrateur supprimé avec succès",
         content: new OA\JsonContent(
-            type: 'array',
-            items: new OA\Items(ref: new Model(type: Admin::class, groups: ['full']))
-           
+            properties: [
+                new OA\Property(property: "data", type: "string", nullable: true, example: null),
+                new OA\Property(property: "message", type: "string", example: "Operation effectuées avec success"),
+                new OA\Property(property: "status", type: "integer", example: 200),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 300,
+        description: "Admin non trouvé",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "data", type: "string", nullable: true, example: null),
+                new OA\Property(property: "message", type: "string", example: "Cette ressource est inexistante"),
+                new OA\Property(property: "status", type: "integer", example: 300),
+            ]
         )
     )]
     #[OA\Tag(name: 'admin')]
-    //#[Security(name: 'Bearer')]
     public function delete(Request $request, Admin $admin, AdminRepository $villeRepository): Response
     {
         try {
-
             if ($admin != null) {
-
                 $villeRepository->remove($admin, true);
-
-                // On retourne la confirmation
                 $this->setMessage("Operation effectuées avec success");
                 $response = $this->response($admin);
             } else {
@@ -284,17 +419,37 @@ class ApiAdminController extends ApiInterface
         return $response;
     }
 
-    #[Route('/delete/all',  methods: ['DELETE'])]
-    /**
-     * Permet de supprimer plusieurs admin.
-     */
+    #[Route('/delete/all', methods: ['DELETE'])]
+    #[OA\Delete(
+        summary: "Supprimer plusieurs administrateurs",
+        description: "Supprime une liste d'administrateurs en passant leurs IDs dans le corps de la requête.",
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(
+                        property: "ids",
+                        type: "array",
+                        description: "Liste des IDs à supprimer",
+                        items: new OA\Items(
+                            type: "object",
+                            properties: [new OA\Property(property: "id", type: "integer", example: 1)]
+                        ),
+                        example: [["id" => 1], ["id" => 2]]
+                    ),
+                ]
+            )
+        )
+    )]
     #[OA\Response(
         response: 200,
-        description: 'Returns the rewards of an user',
+        description: "Administrateurs supprimés avec succès",
         content: new OA\JsonContent(
-            type: 'array',
-            items: new OA\Items(ref: new Model(type: Admin::class, groups: ['full']))
-          
+            properties: [
+                new OA\Property(property: "data", type: "string", example: "[]"),
+                new OA\Property(property: "message", type: "string", example: "Operation effectuées avec success"),
+                new OA\Property(property: "status", type: "integer", example: 200),
+            ]
         )
     )]
     #[OA\Tag(name: 'admin')]

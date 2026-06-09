@@ -3,80 +3,114 @@
 namespace  App\Controller\Apis;
 
 use App\Controller\Apis\Config\ApiInterface;
-use App\DTO\TaxeDTO;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Entity\Taxe;
 use App\Repository\TaxeRepository;
-use App\Repository\UserRepository;
 use DateTime;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use OpenApi\Attributes as OA;
 use Nelmio\ApiDocBundle\Attribute\Model;
-use Nelmio\ApiDocBundle\Annotation\Security;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
 #[Route('/api/taxe')]
 class ApiTaxeController extends ApiInterface
 {
-
-
-
     #[Route('/', methods: ['GET'])]
-    /**
-     * Retourne la liste des taxes.
-     * 
-     */
+    #[OA\Get(
+        summary: "Lister tous les taxes",
+        description: "Retourne la liste complète de tous les taxes (données de référence)."
+    )]
     #[OA\Response(
         response: 200,
-        description: 'Returns the rewards of a user',
+        description: "Liste des taxes récupérée avec succès",
         content: new OA\JsonContent(
-            type: 'array',
-            items: new OA\Items(ref: new Model(type: Taxe::class, groups: ['full']))
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 200),
+                new OA\Property(property: "message", type: "string", example: "Operation effectuée avec succes"),
+                new OA\Property(
+                    property: "data",
+                    type: "array",
+                    items: new OA\Items(
+                        properties: [
+                            new OA\Property(property: "id", type: "integer", example: 1),
+                            new OA\Property(property: "libelle", type: "string", example: "Taxe exemple"),
+                            new OA\Property(property: "code", type: "string", example: "TAX-01"),
+                        ]
+                    )
+                ),
+                new OA\Property(property: "errors", type: "array", items: new OA\Items(type: "string"), example: []),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 500,
+        description: "Erreur interne du serveur",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 500),
+                new OA\Property(property: "message", type: "string", example: "Erreur interne du serveur"),
+                new OA\Property(property: "data", nullable: true, example: null),
+            ]
         )
     )]
     #[OA\Tag(name: 'taxe')]
-    // #[Security(name: 'Bearer')]
     public function index(TaxeRepository $taxeRepository): Response
     {
         try {
-
             $taxes = $taxeRepository->findAll();
-
-          
-
-            $response =  $this->responseData($taxes, 'group1', ['Content-Type' => 'application/json']);
+            $response = $this->responseData($taxes, 'group1', ['Content-Type' => 'application/json']);
         } catch (\Exception $exception) {
             $this->setMessage("");
             $response = $this->response('[]');
         }
-
-        // On envoie la réponse
         return $response;
     }
 
 
     #[Route('/get/one/{id}', methods: ['GET'])]
-    /**
-     * Affiche un(e) taxe en offrant un identifiant.
-     */
-    #[OA\Response(
-        response: 200,
-        description: 'Affiche un(e) taxe en offrant un identifiant',
-        content: new OA\JsonContent(
-            type: 'array',
-            items: new OA\Items(ref: new Model(type: Taxe::class, groups: ['full']))
-            
-        )
+    #[OA\Get(
+        summary: "Obtenir un taxe par ID",
+        description: "Retourne les détails d\'un taxe à partir de son identifiant."
     )]
     #[OA\Parameter(
-        name: 'code',
-        in: 'query',
-        schema: new OA\Schema(type: 'string')
+        name: 'id',
+        in: 'path',
+        required: true,
+        description: "Identifiant unique du taxe",
+        schema: new OA\Schema(type: 'integer', example: 1)
+    )]
+    #[OA\Response(
+        response: 200,
+        description: "Taxe trouvé",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 200),
+                new OA\Property(property: "message", type: "string", example: "Operation effectuée avec succes"),
+                new OA\Property(
+                    property: "data",
+                    type: "object",
+                    properties: [
+                        new OA\Property(property: "id", type: "integer", example: 1),
+                        new OA\Property(property: "libelle", type: "string", example: "Taxe exemple"),
+                        new OA\Property(property: "code", type: "string", example: "TAX-01"),
+                    ]
+                ),
+                new OA\Property(property: "errors", type: "array", items: new OA\Items(type: "string"), example: []),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 300,
+        description: "Taxe non trouvé",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "data", nullable: true, example: null),
+                new OA\Property(property: "message", type: "string", example: "Cette ressource est inexistante"),
+                new OA\Property(property: "status", type: "integer", example: 300),
+            ]
+        )
     )]
     #[OA\Tag(name: 'taxe')]
-    //#[Security(name: 'Bearer')]
     public function getOne(?Taxe $taxe)
     {
         try {
@@ -91,147 +125,212 @@ class ApiTaxeController extends ApiInterface
             $this->setMessage($exception->getMessage());
             $response = $this->response('[]');
         }
-
-
         return $response;
     }
 
 
-    #[Route('/create',  methods: ['POST'])]
-    /**
-     * Permet de créer un(e) taxe.
-     */
+    #[Route('/create', methods: ['POST'])]
     #[OA\Post(
-        summary: "Authentification admin",
-        description: "Génère un token JWT pour les administrateurs.",
+        summary: "Créer un nouveau taxe",
+        description: "Crée un nouveau taxe dans la liste de référence.",
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\MediaType(
                 mediaType: "multipart/form-data",
                 schema: new OA\Schema(
-                properties: [
-                    new OA\Property(property: "libelle", type: "string"),
-                    new OA\Property(property: "percent", type: "string"),
-                    new OA\Property(property: "userUpdate", type: "string"),
-
-                ],
-                type: "object"
+                    required: ["libelle", "code", "taux", "userUpdate"],
+                    properties: [
+                        new OA\Property(property: "libelle", type: "string", example: "M."),
+                        new OA\Property(property: "code", type: "string", example: "CODE-01"),
+                        new OA\Property(property: "taux", type: "number", example: "TAXE-01"),
+                        new OA\Property(property: "userUpdate", type: "integer", description: "ID de l\'utilisateur qui crée", example: 1),
+                    ],
+                    type: "object"
+                )
             )
-            )
-        ),
-        responses: [
-            new OA\Response(response: 401, description: "Invalid credentials")
-        ]
+        )
+    )]
+    #[OA\Response(
+        response: 200,
+        description: "Taxe créé avec succès",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 200),
+                new OA\Property(property: "message", type: "string", example: "Operation effectuée avec succes"),
+                new OA\Property(
+                    property: "data",
+                    type: "object",
+                    properties: [
+                        new OA\Property(property: "id", type: "integer", example: 5),
+                        new OA\Property(property: "libelle", type: "string", example: "Taxe exemple"),
+                        new OA\Property(property: "code", type: "string", example: "TAX-01"),
+                    ]
+                ),
+                new OA\Property(property: "errors", type: "array", items: new OA\Items(type: "string"), example: []),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 400,
+        description: "Données invalides",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 400),
+                new OA\Property(property: "message", type: "string", example: "Validation failed"),
+                new OA\Property(property: "errors", type: "array", items: new OA\Items(type: "string"), example: ["Le libellé est obligatoire."]),
+            ]
+        )
     )]
     #[OA\Tag(name: 'taxe')]
     public function create(Request $request, TaxeRepository $taxeRepository): Response
     {
-
-        $data = json_decode($request->getContent(), true);
         $taxe = new Taxe();
-        $taxe->setLibelle($request->get('libelle'));
-        $taxe->setPourcent($request->get('percent'));
-        $taxe->setCreatedBy($this->userRepository->find($request->get('userUpdate')));
-        $taxe->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
-        $taxe->setCreatedAtValue(new DateTime());
-        $taxe->setUpdatedAt(new DateTime());
+        $taxe->setLibelle($request->request->get('libelle'));
+        $taxe->setCode($request->request->get('code'));
+        $taxe->setCreatedBy($this->userRepository->find($request->request->get('userUpdate')));
+        $taxe->setUpdatedBy($this->userRepository->find($request->request->get('userUpdate')));
+        $taxe->setCreatedAtValue(new \DateTime());
+        $taxe->setUpdatedAt(new \DateTime());
 
         $errorResponse = $this->errorResponse($taxe);
         if ($errorResponse !== null) {
-            return $errorResponse; // Retourne la réponse d'erreur si des erreurs sont présentes
-        } else {
-
-            $taxeRepository->add($taxe, true);
+            return $errorResponse;
         }
 
+        $taxeRepository->add($taxe, true);
         return $this->responseData($taxe, 'group1', ['Content-Type' => 'application/json']);
     }
 
 
     #[Route('/update/{id}', methods: ['PUT', 'POST'])]
     #[OA\Post(
-        summary: "Creation de taxe",
-        description: "Permet de créer un taxe.",
+        summary: "Modifier un taxe existant",
+        description: "Met à jour les informations d\'un taxe identifié par son ID.",
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\MediaType(
                 mediaType: "multipart/form-data",
                 schema: new OA\Schema(
-                properties: [
-                    new OA\Property(property: "libelle", type: "string"),
-                    new OA\Property(property: "percent", type: "string"),
-                    new OA\Property(property: "userUpdate", type: "string"),
-
-                ],
-                type: "object"
+                    properties: [
+                        new OA\Property(property: "libelle", type: "string", example: "M."),
+                        new OA\Property(property: "code", type: "string", example: "CODE-01"),
+                        new OA\Property(property: "taux", type: "number", example: "TAXE-01"),
+                        new OA\Property(property: "userUpdate", type: "integer", description: "ID de l\'utilisateur qui modifie", example: 1),
+                    ],
+                    type: "object"
+                )
             )
-            )
-        ),
-        responses: [
-            new OA\Response(response: 401, description: "Invalid credentials")
-        ]
+        )
+    )]
+    #[OA\Parameter(
+        name: 'id',
+        in: 'path',
+        required: true,
+        description: "Identifiant unique du taxe à modifier",
+        schema: new OA\Schema(type: 'integer', example: 1)
+    )]
+    #[OA\Response(
+        response: 200,
+        description: "Taxe modifié avec succès",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 200),
+                new OA\Property(property: "message", type: "string", example: "Operation effectuée avec succes"),
+                new OA\Property(property: "data", type: "object"),
+                new OA\Property(property: "errors", type: "array", items: new OA\Items(type: "string"), example: []),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 400,
+        description: "Données invalides",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 400),
+                new OA\Property(property: "message", type: "string", example: "Validation failed"),
+                new OA\Property(property: "errors", type: "array", items: new OA\Items(type: "string"), example: ["Le libellé est obligatoire."]),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 300,
+        description: "Taxe non trouvé",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "data", nullable: true, example: null),
+                new OA\Property(property: "message", type: "string", example: "Cette ressource est inexistante"),
+                new OA\Property(property: "status", type: "integer", example: 300),
+            ]
+        )
     )]
     #[OA\Tag(name: 'taxe')]
     public function update(Request $request, Taxe $taxe, TaxeRepository $taxeRepository): Response
     {
         try {
-            $data = json_decode($request->getContent());
-            if ($taxe != null) {
-
-                $taxe->setLibelle($request->get('libelle'));
-                $taxe->setPourcent($request->get('percent'));
-                $taxe->setUpdatedBy($this->userRepository->find($request->get('userUpdate')));
+            if ($taxe !== null) {
+                $taxe->setLibelle($request->request->get('libelle'));
+                $taxe->setCode($request->request->get('code'));
+                $taxe->setUpdatedBy($this->userRepository->find($request->request->get('userUpdate')));
                 $taxe->setUpdatedAt(new \DateTime());
+
                 $errorResponse = $this->errorResponse($taxe);
-
                 if ($errorResponse !== null) {
-                    return $errorResponse; // Retourne la réponse d'erreur si des erreurs sont présentes
-                } else {
-                    $taxeRepository->add($taxe, true);
+                    return $errorResponse;
                 }
-
-
-
-                // On retourne la confirmation
-                $response = $this->responseData($taxe, 'group1', ['Content-Type' => 'application/json']);
+                $taxeRepository->add($taxe, true);
+                return $this->responseData($taxe, 'group1', ['Content-Type' => 'application/json']);
             } else {
-                $this->setMessage("Cette ressource est inexsitante");
+                $this->setMessage("Cette ressource est inexistante");
                 $this->setStatusCode(300);
-                $response = $this->response('[]');
+                return $this->response('[]');
             }
         } catch (\Exception $exception) {
             $this->setMessage("");
-            $response = $this->response('[]');
+            return $this->response('[]');
         }
-        return $response;
     }
 
-    //const TAB_ID = 'parametre-tabs';
 
-    #[Route('/delete/{id}',  methods: ['DELETE'])]
-    /**
-     * permet de supprimer un(e) taxe.
-     */
+    #[Route('/delete/{id}', methods: ['DELETE'])]
+    #[OA\Delete(
+        summary: "Supprimer un taxe",
+        description: "Supprime définitivement un taxe à partir de son identifiant."
+    )]
+    #[OA\Parameter(
+        name: 'id',
+        in: 'path',
+        required: true,
+        description: "Identifiant unique du taxe à supprimer",
+        schema: new OA\Schema(type: 'integer', example: 1)
+    )]
     #[OA\Response(
         response: 200,
-        description: 'permet de supprimer un(e) taxe',
+        description: "Taxe supprimé avec succès",
         content: new OA\JsonContent(
-            type: 'array',
-            items: new OA\Items(ref: new Model(type: Taxe::class, groups: ['full']))
-           
+            properties: [
+                new OA\Property(property: "data", nullable: true, example: null),
+                new OA\Property(property: "message", type: "string", example: "Operation effectuées avec success"),
+                new OA\Property(property: "status", type: "integer", example: 200),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 300,
+        description: "Taxe non trouvé",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "data", nullable: true, example: null),
+                new OA\Property(property: "message", type: "string", example: "Cette ressource est inexistante"),
+                new OA\Property(property: "status", type: "integer", example: 300),
+            ]
         )
     )]
     #[OA\Tag(name: 'taxe')]
-    //#[Security(name: 'Bearer')]
-    public function delete(Request $request, Taxe $taxe, TaxeRepository $villeRepository): Response
+    public function delete(Request $request, Taxe $taxe, TaxeRepository $repository): Response
     {
         try {
-
             if ($taxe != null) {
-
-                $villeRepository->remove($taxe, true);
-
-                // On retourne la confirmation
+                $repository->remove($taxe, true);
                 $this->setMessage("Operation effectuées avec success");
                 $response = $this->response($taxe);
             } else {
@@ -246,30 +345,47 @@ class ApiTaxeController extends ApiInterface
         return $response;
     }
 
-    #[Route('/delete/all',  methods: ['DELETE'])]
-    /**
-     * Permet de supprimer plusieurs taxe.
-     */
+    #[Route('/delete/all', methods: ['DELETE'])]
+    #[OA\Delete(
+        summary: "Supprimer plusieurs taxes",
+        description: "Supprime une liste de taxes en passant leurs IDs dans le corps de la requête.",
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(
+                        property: "ids",
+                        type: "array",
+                        description: "Liste des IDs à supprimer",
+                        items: new OA\Items(
+                            type: "object",
+                            properties: [new OA\Property(property: "id", type: "integer", example: 1)]
+                        ),
+                        example: [["id" => 1], ["id" => 2]]
+                    ),
+                ]
+            )
+        )
+    )]
     #[OA\Response(
         response: 200,
-        description: 'Returns the rewards of an user',
+        description: "Taxes supprimés avec succès",
         content: new OA\JsonContent(
-            type: 'array',
-            items: new OA\Items(ref: new Model(type: Taxe::class, groups: ['full']))
-          
+            properties: [
+                new OA\Property(property: "data", type: "string", example: "[]"),
+                new OA\Property(property: "message", type: "string", example: "Operation effectuées avec success"),
+                new OA\Property(property: "status", type: "integer", example: 200),
+            ]
         )
     )]
     #[OA\Tag(name: 'taxe')]
-    public function deleteAll(Request $request, TaxeRepository $villeRepository): Response
+    public function deleteAll(Request $request, TaxeRepository $repository): Response
     {
         try {
-            $data = json_decode($request->getContent());
-
             foreach ($request->get('ids') as $key => $value) {
-                $taxe = $villeRepository->find($value['id']);
-
+                $taxe = $repository->find($value['id']);
                 if ($taxe != null) {
-                    $villeRepository->remove($taxe);
+                    $repository->remove($taxe);
                 }
             }
             $this->setMessage("Operation effectuées avec success");
