@@ -454,7 +454,7 @@ class ApiPanneauController extends ApiInterface
         )
     )]
     #[OA\Response(
-        response: 400,
+        response: 500,
         description: "Erreur lors de la création (ex: type ou localité invalide)",
         content: new OA\JsonContent(
             properties: [
