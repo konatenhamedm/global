@@ -16,11 +16,6 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[OA\Info(
-    title: "API Panneau Publicitaire",
-    version: "1.0.0",
-    description: "API de gestion des panneaux publicitaires, clients, commandes et validations."
-)]
 class AuthController extends ApiInterface
 {
 
