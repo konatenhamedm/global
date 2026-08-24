@@ -184,7 +184,7 @@ class ApiTailleController extends ApiInterface
     public function create(Request $request, TailleRepository $tailleRepository): Response
     {
         $taille = new Taille();
-        $taille->setLibelle($request->request->get('libelle'));
+        $taille->setDimension($request->request->get('dimension'));
         $taille->setCode($request->request->get('code'));
         $taille->setCreatedBy($this->userRepository->find($request->request->get('userUpdate')));
         $taille->setUpdatedBy($this->userRepository->find($request->request->get('userUpdate')));
@@ -266,7 +266,7 @@ class ApiTailleController extends ApiInterface
     {
         try {
             if ($taille !== null) {
-                $taille->setLibelle($request->request->get('libelle'));
+                $taille->setDimension($request->request->get('dimension'));
                 $taille->setCode($request->request->get('code'));
                 $taille->setUpdatedBy($this->userRepository->find($request->request->get('userUpdate')));
                 $taille->setUpdatedAt(new \DateTime());

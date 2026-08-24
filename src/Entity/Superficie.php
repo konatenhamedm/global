@@ -30,6 +30,23 @@ class Superficie
     #[ORM\OneToMany(targetEntity: Panneau::class, mappedBy: 'superficie')]
     private Collection $panneaus;
 
+    
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Group(["group1"])]
+    private ?string $code = null;
+
+    public function getCode(): ?string
+    {
+        return $this->code;
+    }
+
+    public function setCode(?string $code): static
+    {
+        $this->code = $code;
+
+        return $this;
+    }
+
     public function __construct()
     {
         $this->panneaus = new ArrayCollection();
