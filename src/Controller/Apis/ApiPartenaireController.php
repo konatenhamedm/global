@@ -6,6 +6,7 @@ use App\Controller\Apis\Config\ApiInterface;
 use App\Entity\Fichier;
 use App\Entity\Partenaire;
 use App\Repository\PartenaireRepository;
+use Nelmio\ApiDocBundle\Annotation\Security;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -23,17 +24,16 @@ class ApiPartenaireController extends ApiInterface
     private const MAX_FILE_SIZE = 2097152; // 2 Mo
 
     #[Route('', methods: ['GET'])]
-    #[Route('/', methods: ['GET'])]
     #[OA\Get(
         summary: "Lister les partenaires",
-        description: "Retourne la liste des partenaires ordonnés par le champ ordre croissant puis nom croissant. Le paramètre optionnel actif permet de filtrer les partenaires actifs (1) ou inactifs (0)."
+        description: "Retourne la liste des partenaires ordonnés par le champ ordre croissant puis nom croissant. Endpoint public consommé par la vitrine et le panel admin."
     )]
     #[OA\Parameter(
         name: 'actif',
         in: 'query',
         required: false,
-        description: "Filtrer par statut actif (1 ou true pour actifs, 0 ou false pour inactifs). Par défaut renvoie tous les partenaires.",
-        schema: new OA\Schema(type: 'string', example: '1')
+        description: "Filtre optionnel : 1 (actifs uniquement) ou 0 (inactifs uniquement). Par défaut, tous les partenaires sont retournés.",
+        schema: new OA\Schema(type: 'string', enum: ['1', '0'], example: '1')
     )]
     #[OA\Response(
         response: 200,
@@ -70,6 +70,18 @@ class ApiPartenaireController extends ApiInterface
             ]
         )
     )]
+    #[OA\Response(
+        response: 500,
+        description: "Erreur interne du serveur",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 500),
+                new OA\Property(property: "message", type: "string", example: "Erreur interne du serveur"),
+                new OA\Property(property: "error", type: "string", example: "Détail de l'erreur"),
+                new OA\Property(property: "data", nullable: true, example: null),
+            ]
+        )
+    )]
     #[OA\Tag(name: 'partenaire')]
     public function index(Request $request, PartenaireRepository $partenaireRepository): Response
     {
@@ -95,7 +107,7 @@ class ApiPartenaireController extends ApiInterface
     #[Route('/get/one/{id}', methods: ['GET'])]
     #[OA\Get(
         summary: "Obtenir un partenaire par ID",
-        description: "Retourne les détails complets d'un partenaire à partir de son identifiant technique."
+        description: "Retourne les détails complets d'un partenaire à partir de son identifiant technique. Endpoint public."
     )]
     #[OA\Parameter(
         name: 'id',
@@ -165,9 +177,10 @@ class ApiPartenaireController extends ApiInterface
 
     #[Route('/create', methods: ['POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    #[Security(name: 'Bearer')]
     #[OA\Post(
         summary: "Créer un nouveau partenaire",
-        description: "Crée un nouveau partenaire avec upload obligatoire du logo en multipart/form-data.",
+        description: "Crée un partenaire avec upload obligatoire du logo. Corps en multipart/form-data.",
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\MediaType(
@@ -175,12 +188,12 @@ class ApiPartenaireController extends ApiInterface
                 schema: new OA\Schema(
                     required: ['nom', 'logo', 'userUpdate'],
                     properties: [
-                        new OA\Property(property: "nom", type: "string", description: "Raison sociale du partenaire", example: "MTN Côte d'Ivoire"),
-                        new OA\Property(property: "logo", type: "string", format: "binary", description: "Fichier image du logo (png, jpg, jpeg, webp, svg ; max 2 Mo)"),
-                        new OA\Property(property: "siteWeb", type: "string", description: "URL absolue du site du partenaire (optionnel)", example: "https://mtn.ci"),
-                        new OA\Property(property: "ordre", type: "integer", description: "Position d'affichage (défaut 0)", example: 1),
-                        new OA\Property(property: "actif", type: "string", description: "1/0 ou true/false (défaut 1)", example: "1"),
-                        new OA\Property(property: "userUpdate", type: "integer", description: "ID de l'utilisateur admin qui crée", example: 4),
+                        new OA\Property(property: "nom", type: "string", description: "Raison sociale / nom affiché", example: "MTN Côte d'Ivoire"),
+                        new OA\Property(property: "logo", type: "string", format: "binary", description: "Fichier logo (png, jpg, jpeg, webp, svg - max 2 Mo)"),
+                        new OA\Property(property: "siteWeb", type: "string", nullable: true, description: "URL absolue du site web partenaire (ex: https://mtn.ci)", example: "https://mtn.ci"),
+                        new OA\Property(property: "ordre", type: "integer", description: "Ordre d'affichage croissant (défaut 0)", example: 1),
+                        new OA\Property(property: "actif", type: "string", description: "Statut actif (1 ou true / 0 ou false, défaut 1)", example: "1"),
+                        new OA\Property(property: "userUpdate", type: "integer", description: "ID de l'administrateur créateur", example: 4),
                     ]
                 )
             )
@@ -191,23 +204,61 @@ class ApiPartenaireController extends ApiInterface
         description: "Partenaire créé avec succès",
         content: new OA\JsonContent(
             properties: [
+                new OA\Property(
+                    property: "data",
+                    type: "object",
+                    properties: [
+                        new OA\Property(property: "id", type: "integer", example: 3),
+                        new OA\Property(property: "nom", type: "string", example: "MTN Côte d'Ivoire"),
+                        new OA\Property(property: "siteWeb", type: "string", nullable: true, example: "https://mtn.ci"),
+                        new OA\Property(property: "ordre", type: "integer", example: 1),
+                        new OA\Property(property: "actif", type: "boolean", example: true),
+                        new OA\Property(
+                            property: "logo",
+                            type: "object",
+                            properties: [
+                                new OA\Property(property: "alt", type: "string", example: "mtn_ci_6631.png"),
+                                new OA\Property(property: "path", type: "string", example: "partenaires"),
+                                new OA\Property(property: "url", type: "string", example: "http://global.ticleaders.net/uploads/partenaires/mtn_ci_6631.png"),
+                            ]
+                        ),
+                        new OA\Property(property: "dateCreation", type: "string", format: "date-time", example: "2026-09-01T10:12:00+00:00"),
+                        new OA\Property(property: "dateMaj", type: "string", format: "date-time", example: "2026-09-01T10:12:00+00:00"),
+                    ]
+                ),
                 new OA\Property(property: "code", type: "integer", example: 201),
                 new OA\Property(property: "message", type: "string", example: "Partenaire créé avec succès"),
-                new OA\Property(property: "data", type: "object"),
             ]
         )
     )]
     #[OA\Response(
         response: 422,
-        description: "Erreur de validation",
+        description: "Erreur de validation des champs",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(property: "message", type: "string", example: "Données invalides"),
-                new OA\Property(property: "errors", type: "object", example: ["nom" => "Le nom du partenaire est obligatoire."]),
+                new OA\Property(
+                    property: "errors",
+                    type: "object",
+                    example: [
+                        "nom" => "Le nom du partenaire est obligatoire.",
+                        "logo" => "Le logo est obligatoire à la création.",
+                        "siteWeb" => "L'adresse du site web doit être une URL absolue valide (ex. https://exemple.com)."
+                    ]
+                ),
             ]
         )
     )]
-    #[OA\Response(response: 401, description: "Non authentifié (JWT absent ou invalide)")]
+    #[OA\Response(
+        response: 401,
+        description: "Non authentifié (JWT Bearer manquant ou invalide)",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 401),
+                new OA\Property(property: "message", type: "string", example: "JWT Token not found"),
+            ]
+        )
+    )]
     #[OA\Tag(name: 'partenaire')]
     public function create(Request $request, PartenaireRepository $partenaireRepository): Response
     {
@@ -291,9 +342,10 @@ class ApiPartenaireController extends ApiInterface
 
     #[Route('/update/{id}', methods: ['POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    #[Security(name: 'Bearer')]
     #[OA\Post(
         summary: "Modifier un partenaire existant",
-        description: "Mise à jour partielle (PATCH) d'un partenaire. Tous les champs sont optionnels sauf userUpdate. Si aucun nouveau logo n'est envoyé, le logo existant est conservé.",
+        description: "Mise à jour partielle (PATCH) d'un partenaire. Tous les champs sont optionnels sauf userUpdate. Si aucun nouveau logo n'est envoyé, le logo existant est conservé. Si un logo est envoyé, l'ancien fichier est supprimé du disque.",
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\MediaType(
@@ -302,9 +354,9 @@ class ApiPartenaireController extends ApiInterface
                     required: ['userUpdate'],
                     properties: [
                         new OA\Property(property: "nom", type: "string", description: "Nouveau nom", example: "MTN CI"),
-                        new OA\Property(property: "logo", type: "string", format: "binary", description: "Nouveau logo (optionnel, remplace l'ancien)"),
-                        new OA\Property(property: "siteWeb", type: "string", description: "Nouveau site web (ou vide pour supprimer)", example: "https://mtn.ci"),
-                        new OA\Property(property: "ordre", type: "integer", description: "Nouvel ordre", example: 2),
+                        new OA\Property(property: "logo", type: "string", format: "binary", description: "Nouveau logo (remplace l'ancien ; laisser vide pour conserver)", nullable: true),
+                        new OA\Property(property: "siteWeb", type: "string", nullable: true, description: "Nouveau site web (ou vide pour supprimer le lien)", example: "https://mtn.ci"),
+                        new OA\Property(property: "ordre", type: "integer", description: "Nouvel ordre d'affichage", example: 2),
                         new OA\Property(property: "actif", type: "string", description: "Statut actif (1/0 ou true/false)", example: "1"),
                         new OA\Property(property: "userUpdate", type: "integer", description: "ID de l'administrateur qui modifie", example: 4),
                     ]
@@ -324,9 +376,30 @@ class ApiPartenaireController extends ApiInterface
         description: "Partenaire mis à jour avec succès",
         content: new OA\JsonContent(
             properties: [
+                new OA\Property(
+                    property: "data",
+                    type: "object",
+                    properties: [
+                        new OA\Property(property: "id", type: "integer", example: 3),
+                        new OA\Property(property: "nom", type: "string", example: "MTN CI"),
+                        new OA\Property(property: "siteWeb", type: "string", nullable: true, example: "https://mtn.ci"),
+                        new OA\Property(property: "ordre", type: "integer", example: 2),
+                        new OA\Property(property: "actif", type: "boolean", example: true),
+                        new OA\Property(
+                            property: "logo",
+                            type: "object",
+                            properties: [
+                                new OA\Property(property: "alt", type: "string", example: "mtn_ci_6631.png"),
+                                new OA\Property(property: "path", type: "string", example: "partenaires"),
+                                new OA\Property(property: "url", type: "string", example: "http://global.ticleaders.net/uploads/partenaires/mtn_ci_6631.png"),
+                            ]
+                        ),
+                        new OA\Property(property: "dateCreation", type: "string", format: "date-time", example: "2026-09-01T10:12:00+00:00"),
+                        new OA\Property(property: "dateMaj", type: "string", format: "date-time", example: "2026-09-01T10:12:00+00:00"),
+                    ]
+                ),
                 new OA\Property(property: "code", type: "integer", example: 200),
                 new OA\Property(property: "message", type: "string", example: "Partenaire mis à jour avec succès"),
-                new OA\Property(property: "data", type: "object"),
             ]
         )
     )]
@@ -341,8 +414,26 @@ class ApiPartenaireController extends ApiInterface
             ]
         )
     )]
-    #[OA\Response(response: 422, description: "Erreur de validation")]
-    #[OA\Response(response: 401, description: "Non authentifié")]
+    #[OA\Response(
+        response: 422,
+        description: "Erreur de validation",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "message", type: "string", example: "Données invalides"),
+                new OA\Property(property: "errors", type: "object", example: ["siteWeb" => "L'adresse du site web doit être une URL absolue valide."]),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 401,
+        description: "Non authentifié (JWT Bearer manquant ou invalide)",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 401),
+                new OA\Property(property: "message", type: "string", example: "JWT Token not found"),
+            ]
+        )
+    )]
     #[OA\Tag(name: 'partenaire')]
     public function update(int $id, Request $request, PartenaireRepository $partenaireRepository): Response
     {
@@ -445,6 +536,7 @@ class ApiPartenaireController extends ApiInterface
 
     #[Route('/delete/{id}', methods: ['DELETE'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    #[Security(name: 'Bearer')]
     #[OA\Delete(
         summary: "Supprimer définitivement un partenaire",
         description: "Supprime le partenaire en base de données ainsi que son fichier logo physique sur le serveur."
@@ -485,7 +577,16 @@ class ApiPartenaireController extends ApiInterface
             ]
         )
     )]
-    #[OA\Response(response: 401, description: "Non authentifié")]
+    #[OA\Response(
+        response: 401,
+        description: "Non authentifié (JWT Bearer manquant ou invalide)",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 401),
+                new OA\Property(property: "message", type: "string", example: "JWT Token not found"),
+            ]
+        )
+    )]
     #[OA\Tag(name: 'partenaire')]
     public function delete(int $id, Request $request, PartenaireRepository $partenaireRepository): Response
     {
@@ -525,6 +626,7 @@ class ApiPartenaireController extends ApiInterface
 
     #[Route('/reorder', methods: ['POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    #[Security(name: 'Bearer')]
     #[OA\Post(
         summary: "Réordonnancement en lot des partenaires",
         description: "Permet de mettre à jour les ordres d'affichage en une seule requête JSON (drag & drop admin).",
@@ -561,6 +663,26 @@ class ApiPartenaireController extends ApiInterface
                 ),
                 new OA\Property(property: "code", type: "integer", example: 200),
                 new OA\Property(property: "message", type: "string", example: "Réordonnancement effectué avec succès"),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 400,
+        description: "Requête invalide",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 400),
+                new OA\Property(property: "message", type: "string", example: "Le corps de la requête doit contenir un tableau 'ordre'."),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 401,
+        description: "Non authentifié",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: "code", type: "integer", example: 401),
+                new OA\Property(property: "message", type: "string", example: "JWT Token not found"),
             ]
         )
     )]
