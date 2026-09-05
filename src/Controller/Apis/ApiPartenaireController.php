@@ -6,7 +6,7 @@ use App\Controller\Apis\Config\ApiInterface;
 use App\Entity\Fichier;
 use App\Entity\Partenaire;
 use App\Repository\PartenaireRepository;
-use Nelmio\ApiDocBundle\Annotation\Security;
+use Nelmio\ApiDocBundle\Attribute\Security;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -176,8 +176,6 @@ class ApiPartenaireController extends ApiInterface
     }
 
     #[Route('/create', methods: ['POST'])]
-    #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    #[Security(name: 'Bearer')]
     #[OA\Post(
         summary: "Créer un nouveau partenaire",
         description: "Crée un partenaire avec upload obligatoire du logo. Corps en multipart/form-data.",
@@ -341,8 +339,6 @@ class ApiPartenaireController extends ApiInterface
     }
 
     #[Route('/update/{id}', methods: ['POST'])]
-    #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    #[Security(name: 'Bearer')]
     #[OA\Post(
         summary: "Modifier un partenaire existant",
         description: "Mise à jour partielle (PATCH) d'un partenaire. Tous les champs sont optionnels sauf userUpdate. Si aucun nouveau logo n'est envoyé, le logo existant est conservé. Si un logo est envoyé, l'ancien fichier est supprimé du disque.",
@@ -535,8 +531,6 @@ class ApiPartenaireController extends ApiInterface
     }
 
     #[Route('/delete/{id}', methods: ['DELETE'])]
-    #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    #[Security(name: 'Bearer')]
     #[OA\Delete(
         summary: "Supprimer définitivement un partenaire",
         description: "Supprime le partenaire en base de données ainsi que son fichier logo physique sur le serveur."
@@ -625,8 +619,6 @@ class ApiPartenaireController extends ApiInterface
     }
 
     #[Route('/reorder', methods: ['POST'])]
-    #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    #[Security(name: 'Bearer')]
     #[OA\Post(
         summary: "Réordonnancement en lot des partenaires",
         description: "Permet de mettre à jour les ordres d'affichage en une seule requête JSON (drag & drop admin).",

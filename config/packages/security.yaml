@@ -41,22 +41,23 @@ security:
                 success_handler: lexik_jwt_authentication.handler.authentication_success
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
 
-        # Default authentication for main users
-        main:
-            lazy: true
-            provider: app_user_admin_provider
-
         # Protected API endpoints with JWT
-        api:  # Correction d'indentation ici
+        api:
             pattern: ^/api/
             stateless: true
             jwt: ~
             provider: app_users
 
+        # Default authentication for main users
+        main:
+            lazy: true
+            provider: app_user_admin_provider
+
     # Access control to secure routes
     access_control:
         - { path: ^/api/(login_check|auth/login_check), roles: PUBLIC_ACCESS }
-        #- { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api/doc, roles: PUBLIC_ACCESS }
+        - { path: ^/api, roles: PUBLIC_ACCESS }
 
 # Configuration pour les tests (hashing faible coût)
 when@test:
