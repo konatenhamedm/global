@@ -58,6 +58,7 @@ security:
         - { path: ^/api/(login_check|auth/login_check), roles: PUBLIC_ACCESS }
         - { path: ^/api/doc, roles: PUBLIC_ACCESS }
         - { path: ^/api, roles: PUBLIC_ACCESS }
+        - { path: ^/api/partenaire, roles: PUBLIC_ACCESS }
 
 # Configuration pour les tests (hashing faible coût)
 when@test:
